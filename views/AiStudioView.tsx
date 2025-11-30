@@ -8,8 +8,6 @@ interface AiStudioViewProps {
   setSelectedCartItemId: (id: number | null) => void;
   isCartSelectorOpen: boolean;
   setIsCartSelectorOpen: (open: boolean) => void;
-  aiPrompt: string;
-  setAiPrompt: (prompt: string) => void;
   generatedImage: string | null;
   isGenerating: boolean;
   useMyPhoto: boolean;
@@ -27,8 +25,6 @@ export const AiStudioView: React.FC<AiStudioViewProps> = ({
   setSelectedCartItemId,
   isCartSelectorOpen,
   setIsCartSelectorOpen,
-  aiPrompt,
-  setAiPrompt,
   generatedImage,
   isGenerating,
   useMyPhoto,
@@ -176,27 +172,16 @@ export const AiStudioView: React.FC<AiStudioViewProps> = ({
           </div>
 
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-bold text-gray-700">요청사항</label>
-              <span className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded">
+            <div className="flex justify-center">
+              <span className="text-xs text-purple-600 font-medium bg-purple-50 px-3 py-1.5 rounded-full">
                 {userPhoto && selectedCartItem ? '가상 피팅 모드' : (userPhoto ? '이미지 편집 모드' : '새로운 생성 모드')}
               </span>
             </div>
-            <textarea 
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder={
-                userPhoto && selectedCartItem
-                ? "예: 한강 공원에서 산책하는 자연스러운 모습"
-                : (userPhoto ? "예: 배경을 벚꽃이 핀 거리로 바꿔줘" : "예: 힙한 스트릿 패션 스타일")
-              }
-              className="w-full h-20 p-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm bg-gray-50"
-            ></textarea>
             <button 
               onClick={onAiGeneration}
-              disabled={isGenerating || !aiPrompt.trim() || (selectedCartItem && !userPhoto)}
+              disabled={isGenerating || (selectedCartItem && !userPhoto)}
               className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
-                isGenerating || !aiPrompt.trim() || (selectedCartItem && !userPhoto)
+                isGenerating || (selectedCartItem && !userPhoto)
                 ? 'bg-gray-300 cursor-not-allowed' 
                 : 'bg-gradient-to-r from-black to-gray-800 active:scale-[0.98]'
               }`}

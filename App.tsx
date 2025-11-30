@@ -38,8 +38,6 @@ const App: React.FC = () => {
     userPhoto,
     isPhotoSheetOpen,
     setIsPhotoSheetOpen,
-    aiPrompt,
-    setAiPrompt,
     generatedImage,
     isGenerating,
     useMyPhoto,
@@ -263,8 +261,6 @@ const App: React.FC = () => {
           setSelectedCartItemId={setSelectedCartItemId}
           isCartSelectorOpen={isCartSelectorOpen}
           setIsCartSelectorOpen={setIsCartSelectorOpen}
-          aiPrompt={aiPrompt}
-          setAiPrompt={setAiPrompt}
           generatedImage={generatedImage}
           isGenerating={isGenerating}
           useMyPhoto={useMyPhoto}
