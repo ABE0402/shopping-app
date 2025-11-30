@@ -14,16 +14,6 @@ const getApiKey = () => {
     (typeof process !== 'undefined' && (process as any).env?.API_KEY) ||
     '';
   
-  console.log('API Key check:', {
-    hasWindowKey: typeof window !== 'undefined' && !!(window as any).__GEMINI_API_KEY__,
-    hasViteKey: !!import.meta.env.VITE_GEMINI_API_KEY,
-    hasMetaKey: !!import.meta.env.GEMINI_API_KEY,
-    hasProcessKey: typeof process !== 'undefined' && !!(process as any).env?.GEMINI_API_KEY,
-    keyLength: apiKey ? apiKey.length : 0,
-    keyPreview: apiKey ? `${apiKey.substring(0, 15)}...` : 'empty',
-    keyValid: apiKey && apiKey.length > 20 && apiKey !== 'your_api_key_here'
-  });
-  
   return apiKey;
 };
 
@@ -151,8 +141,6 @@ export const searchProductsWithAI = async (query: string, allProducts: Product[]
 export const generateFashionImage = async (prompt: string): Promise<string | null> => {
   try {
     const ai = getAI();
-    console.log("Generating image with prompt:", prompt);
-    console.log("Using model: gemini-2.5-flash-image");
     
     // 무료 티어에서 사용 가능한 모델 시도
     // 참고: 이미지 생성 모델은 실제로는 텍스트 모델과 다른 API를 사용할 수 있습니다
@@ -171,15 +159,12 @@ export const generateFashionImage = async (prompt: string): Promise<string | nul
     
     for (const model of modelOptions) {
       try {
-        console.log(`Trying model: ${model}`);
         const response = await ai.models.generateContent({
           model: model,
           contents: {
             parts: [{ text: prompt }]
           }
         });
-        
-        console.log(`✅ Success with model: ${model}`);
         
         for (const part of response.candidates?.[0]?.content?.parts || []) {
           if (part.inlineData) {
@@ -189,24 +174,15 @@ export const generateFashionImage = async (prompt: string): Promise<string | nul
       } catch (error: any) {
         const errorMsg = error?.message || error?.toString() || '알 수 없는 오류';
         const errorCode = error?.code || error?.status;
-        console.log(`❌ Model ${model} failed:`, {
-          model,
-          code: errorCode,
-          message: errorMsg.substring(0, 150),
-          isQuotaError: errorCode === 429 || error?.status === 'RESOURCE_EXHAUSTED',
-          isNotFound: errorCode === 400 && errorMsg.includes('not found')
-        });
         lastError = error;
         
         // 모델이 존재하지 않는 경우 (400 에러) 다음 모델 시도
         if (errorCode === 400 && (errorMsg.includes('not found') || errorMsg.includes('Invalid model'))) {
-          console.log(`   → Model ${model} does not exist, trying next...`);
           continue;
         }
         
         // 할당량 오류면 다음 모델 시도
         if (errorCode === 429 || error?.status === 'RESOURCE_EXHAUSTED') {
-          console.log(`   → Quota exceeded for ${model}, trying next...`);
           continue;
         }
         
@@ -220,17 +196,6 @@ export const generateFashionImage = async (prompt: string): Promise<string | nul
       throw lastError;
     }
 
-    console.log("Response received:", response);
-    console.log("Candidates:", response.candidates);
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        console.log("Found inline data, returning image");
-        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-      }
-    }
-    
-    console.warn("No inline data found in response");
     return null;
   } catch (error: any) {
     console.error("Nano Banana Generation Error:", error);
@@ -264,8 +229,6 @@ export const editFashionImage = async (base64Image: string, prompt: string): Pro
     const mimeType = matches[1];
     const data = matches[2];
 
-    console.log("Editing image with prompt:", prompt);
-
     // 무료 티어에서 사용 가능한 모델 시도
     const modelOptions = [
       'gemini-2.0-flash-exp-image-generation',  // 최신 무료 모델
@@ -278,7 +241,6 @@ export const editFashionImage = async (base64Image: string, prompt: string): Pro
     
     for (const model of modelOptions) {
       try {
-        console.log(`Trying model: ${model} for edit`);
         const response = await ai.models.generateContent({
           model: model,
           contents: {
@@ -294,8 +256,6 @@ export const editFashionImage = async (base64Image: string, prompt: string): Pro
           }
         });
         
-        console.log(`✅ Success with model: ${model}`);
-        
         for (const part of response.candidates?.[0]?.content?.parts || []) {
           if (part.inlineData) {
             return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
@@ -304,24 +264,15 @@ export const editFashionImage = async (base64Image: string, prompt: string): Pro
       } catch (error: any) {
         const errorMsg = error?.message || error?.toString() || '알 수 없는 오류';
         const errorCode = error?.code || error?.status;
-        console.log(`❌ Model ${model} failed:`, {
-          model,
-          code: errorCode,
-          message: errorMsg.substring(0, 150),
-          isQuotaError: errorCode === 429 || error?.status === 'RESOURCE_EXHAUSTED',
-          isNotFound: errorCode === 400 && errorMsg.includes('not found')
-        });
         lastError = error;
         
         // 모델이 존재하지 않는 경우 (400 에러) 다음 모델 시도
         if (errorCode === 400 && (errorMsg.includes('not found') || errorMsg.includes('Invalid model'))) {
-          console.log(`   → Model ${model} does not exist, trying next...`);
           continue;
         }
         
         // 할당량 오류면 다음 모델 시도
         if (errorCode === 429 || error?.status === 'RESOURCE_EXHAUSTED') {
-          console.log(`   → Quota exceeded for ${model}, trying next...`);
           continue;
         }
         
@@ -375,10 +326,6 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
     const productMatches = productImageBase64.match(/^data:(.+);base64,(.+)$/);
     if (!productMatches) throw new Error("Invalid product image format");
 
-    console.log("Try-on with prompt:", prompt);
-    console.log("=".repeat(50));
-    console.log("🔍 Starting model search for free tier compatible model...");
-
     // 무료 티어에서 사용 가능한 모델 시도
     // 참고: 이미지 생성은 실제로는 특별한 엔드포인트를 사용할 수 있습니다
     const modelOptions = [
@@ -398,7 +345,6 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
     for (const model of modelOptions) {
       try {
         triedModels.push(model);
-        console.log(`🔄 [${triedModels.length}/${modelOptions.length}] Trying model: ${model}`);
         const response = await ai.models.generateContent({
           model: model,
           contents: {
@@ -427,8 +373,6 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
           }
         });
         
-        console.log(`✅ Success with model: ${model}`);
-        
         for (const part of response.candidates?.[0]?.content?.parts || []) {
           if (part.inlineData) {
             return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
@@ -437,24 +381,15 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
       } catch (error: any) {
         const errorMsg = error?.message || error?.toString() || '알 수 없는 오류';
         const errorCode = error?.code || error?.status;
-        console.log(`❌ Model ${model} failed:`, {
-          model,
-          code: errorCode,
-          message: errorMsg.substring(0, 150),
-          isQuotaError: errorCode === 429 || error?.status === 'RESOURCE_EXHAUSTED',
-          isNotFound: errorCode === 400 && errorMsg.includes('not found')
-        });
         lastError = error;
         
         // 모델이 존재하지 않는 경우 (400 에러) 다음 모델 시도
         if (errorCode === 400 && (errorMsg.includes('not found') || errorMsg.includes('Invalid model'))) {
-          console.log(`   → Model ${model} does not exist, trying next...`);
           continue;
         }
         
         // 할당량 오류면 다음 모델 시도
         if (errorCode === 429 || error?.status === 'RESOURCE_EXHAUSTED') {
-          console.log(`   → Quota exceeded for ${model}, trying next...`);
           continue;
         }
         
@@ -465,15 +400,9 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
     
     // 모든 모델 실패 시 마지막 에러 throw
     if (lastError) {
-      console.error("=".repeat(50));
-      console.error(`❌ All ${triedModels.length} models failed for try-on:`);
-      triedModels.forEach((m, i) => console.error(`   ${i + 1}. ${m}`));
-      console.error("=".repeat(50));
       throw lastError;
     }
 
-    // 이 코드는 실행되지 않아야 함 (위에서 return 또는 throw)
-    console.warn("⚠️ Unexpected: reached end of tryOnFashionItem without result");
     return null;
   } catch (error: any) {
     console.error("Nano Banana Try-On Error:", error);
@@ -494,13 +423,8 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
       ) || error?.message?.includes('limit: 0');
       
       if (!hasZeroLimit && retryCount < MAX_RETRIES) {
-        console.log(`⚠️ 할당량 초과. ${retryDelaySeconds}초 후 자동 재시도... (${retryCount + 1}/${MAX_RETRIES})`);
         await wait(Math.min(retryDelaySeconds, 60)); // 최대 60초까지만 대기
         return tryOnFashionItem(userImageBase64, productImageBase64, prompt, retryCount + 1);
-      }
-      
-      if (hasZeroLimit) {
-        console.warn('⚠️ 할당량이 0으로 설정되어 있어 재시도해도 실패할 것입니다.');
       }
       
       const errorMsg = `

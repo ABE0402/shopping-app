@@ -6,8 +6,6 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     const apiKey = env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY || '';
     
-    console.log('Vite Config - API Key loaded:', apiKey ? `${apiKey.substring(0, 10)}...` : 'NOT FOUND');
-    
     return {
       server: {
         port: 3000,
