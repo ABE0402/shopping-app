@@ -376,6 +376,8 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
     if (!productMatches) throw new Error("Invalid product image format");
 
     console.log("Try-on with prompt:", prompt);
+    console.log("=".repeat(50));
+    console.log("🔍 Starting model search for free tier compatible model...");
 
     // 무료 티어에서 사용 가능한 모델 시도
     // 참고: 이미지 생성은 실제로는 특별한 엔드포인트를 사용할 수 있습니다
@@ -391,10 +393,12 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
     ];
     
     let lastError: any = null;
+    let triedModels: string[] = [];
     
     for (const model of modelOptions) {
       try {
-        console.log(`🔄 Trying model: ${model} for try-on`);
+        triedModels.push(model);
+        console.log(`🔄 [${triedModels.length}/${modelOptions.length}] Trying model: ${model}`);
         const response = await ai.models.generateContent({
           model: model,
           contents: {
@@ -461,14 +465,15 @@ export const tryOnFashionItem = async (userImageBase64: string, productImageBase
     
     // 모든 모델 실패 시 마지막 에러 throw
     if (lastError) {
+      console.error("=".repeat(50));
+      console.error(`❌ All ${triedModels.length} models failed for try-on:`);
+      triedModels.forEach((m, i) => console.error(`   ${i + 1}. ${m}`));
+      console.error("=".repeat(50));
       throw lastError;
     }
 
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-      }
-    }
+    // 이 코드는 실행되지 않아야 함 (위에서 return 또는 throw)
+    console.warn("⚠️ Unexpected: reached end of tryOnFashionItem without result");
     return null;
   } catch (error: any) {
     console.error("Nano Banana Try-On Error:", error);

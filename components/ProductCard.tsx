@@ -5,9 +5,17 @@ interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
   onClick: (product: Product) => void;
+  isLiked?: boolean;
+  onToggleLike?: (e: React.MouseEvent, product: Product) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onClick }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ 
+  product, 
+  onAddToCart, 
+  onClick, 
+  isLiked = false,
+  onToggleLike 
+}) => {
   return (
     <div 
       className="group flex flex-col bg-white rounded-lg overflow-hidden cursor-pointer"
@@ -25,6 +33,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
             NEW
           </div>
         )}
+        
+        {/* Like Button */}
+        {onToggleLike && (
+          <button 
+            onClick={(e) => onToggleLike(e, product)}
+            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white/50 backdrop-blur-sm hover:bg-white transition-colors z-10"
+          >
+            <i className={`${isLiked ? 'fa-solid text-red-500' : 'fa-regular text-gray-700'} fa-heart text-lg`}></i>
+          </button>
+        )}
+
         <button 
           onClick={(e) => {
             e.stopPropagation();

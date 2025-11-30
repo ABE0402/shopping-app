@@ -12,13 +12,63 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   // 간단한 관리자 인증 (실제로는 서버에서 처리해야 함)
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(''); // 에러 초기화
     
-    // 기본 관리자 계정 (실제로는 서버 인증 필요)
-    if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('isAdmin', 'true');
-      onLogin();
-    } else {
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+    // 입력값 정리 (공백 제거)
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+    
+    console.log('로그인 시도:', { username: trimmedUsername, password: trimmedPassword });
+    
+    // 기본 관리자 계정 먼저 체크 (가장 간단한 방법)
+    if (trimmedUsername === 'admin' && trimmedPassword === 'admin123') {
+      console.log('기본 관리자 계정으로 로그인 시도');
+      // 기본 계정을 localStorage에 저장 (없으면)
+      try {
+        const adminAccounts = JSON.parse(localStorage.getItem('adminAccounts') || '[]');
+        if (!adminAccounts.find((acc: any) => acc.id === 'admin')) {
+          const defaultAdmin = {
+            id: 'admin',
+            password: 'admin123',
+            name: '관리자',
+            createdAt: new Date().toISOString()
+          };
+          adminAccounts.push(defaultAdmin);
+          localStorage.setItem('adminAccounts', JSON.stringify(adminAccounts));
+          console.log('기본 관리자 계정 생성됨');
+        }
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('currentAdmin', JSON.stringify({ id: 'admin', name: '관리자' }));
+        console.log('관리자 로그인 성공');
+        onLogin();
+        return;
+      } catch (err) {
+        console.error('로그인 중 오류:', err);
+        setError('로그인 중 오류가 발생했습니다. 콘솔을 확인해주세요.');
+        return;
+      }
+    }
+    
+    // localStorage에서 관리자 계정 확인
+    try {
+      const adminAccounts = JSON.parse(localStorage.getItem('adminAccounts') || '[]');
+      console.log('저장된 관리자 계정:', adminAccounts);
+      const admin = adminAccounts.find((acc: any) => 
+        acc.id === trimmedUsername && acc.password === trimmedPassword
+      );
+      
+      if (admin) {
+        console.log('관리자 계정으로 로그인 성공:', admin);
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('currentAdmin', JSON.stringify({ id: admin.id, name: admin.name }));
+        onLogin();
+      } else {
+        console.log('관리자 계정을 찾을 수 없음');
+        setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      }
+    } catch (err) {
+      console.error('관리자 계정 확인 중 오류:', err);
+      setError('로그인 중 오류가 발생했습니다.');
     }
   };
 

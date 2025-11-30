@@ -16,4 +16,11 @@ export interface CartItem extends Product {
   quantity: number;
 }
 
-export type ViewState = 'HOME' | 'CART' | 'MYPAGE' | 'DETAIL' | 'MY_PHOTOS' | 'AI_STUDIO' | 'ADMIN_LOGIN' | 'ADMIN_DASHBOARD';
+export type ViewState = 'HOME' | 'CART' | 'MYPAGE' | 'DETAIL' | 'MY_PHOTOS' | 'AI_STUDIO' | 'ADMIN_LOGIN' | 'ADMIN_DASHBOARD' | 'LOGIN' | 'SIGNUP' | 'FIND_ID' | 'FIND_PASSWORD' | 'WISHLIST' | 'RECENTLY_VIEWED';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+}

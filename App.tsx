@@ -3,7 +3,13 @@ import { Navbar } from './components/Navbar';
 import { ProductCard } from './components/ProductCard';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
-import { Category, Product, ViewState, CartItem } from './types';
+import { Login } from './components/Login';
+import { Signup } from './components/Signup';
+import { FindId } from './components/FindId';
+import { FindPassword } from './components/FindPassword';
+import { WishlistView } from './components/WishlistView';
+import { RecentlyViewedView } from './components/RecentlyViewedView';
+import { Category, Product, ViewState, CartItem, User } from './types';
 import { CATEGORIES, INITIAL_PRODUCTS } from './constants';
 import { generateFashionImage, editFashionImage, tryOnFashionItem, urlToBase64 } from './services/geminiService';
 
@@ -27,21 +33,75 @@ const App: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>('전체');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // User Features State (from stylehub)
+  const [likedProductIds, setLikedProductIds] = useState<number[]>(() => {
+    const saved = localStorage.getItem('likedProductIds');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+  const [recentProductIds, setRecentProductIds] = useState<number[]>(() => {
+    const saved = localStorage.getItem('recentProductIds');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     return localStorage.getItem('isAdmin') === 'true';
   });
+
+  // User authentication state
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('currentUser');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  // Initialize default admin account if not exists
+  useEffect(() => {
+    const adminAccounts = JSON.parse(localStorage.getItem('adminAccounts') || '[]');
+    if (adminAccounts.length === 0) {
+      // Create default admin account
+      const defaultAdmin = {
+        id: 'admin',
+        password: 'admin123',
+        name: '관리자',
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem('adminAccounts', JSON.stringify([defaultAdmin]));
+    }
+  }, []);
 
   // Save products to localStorage whenever products change
   useEffect(() => {
     localStorage.setItem('products', JSON.stringify(products));
   }, [products]);
 
-  // Check admin status on mount
+  // Check admin status on mount and redirect to admin dashboard if logged in
   useEffect(() => {
-    if (isAdmin && currentView !== 'ADMIN_DASHBOARD') {
+    const adminStatus = localStorage.getItem('isAdmin') === 'true';
+    if (adminStatus && currentView !== 'ADMIN_DASHBOARD' && currentView !== 'ADMIN_LOGIN') {
+      setIsAdmin(true);
       setCurrentView('ADMIN_DASHBOARD');
     }
-  }, [isAdmin]);
+  }, []);
   
   // My Photo Logic
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -81,6 +141,23 @@ const App: React.FC = () => {
   const goToDetail = (product: Product) => {
     setSelectedProduct(product);
     setCurrentView('DETAIL');
+    
+    // Add to Recently Viewed
+    setRecentProductIds(prev => {
+      const newIds = [product.id, ...prev.filter(id => id !== product.id)];
+      return newIds.slice(0, 30); // 최대 30개만 저장
+    });
+  };
+
+  const toggleLike = (e: React.MouseEvent, product: Product) => {
+    e.stopPropagation();
+    setLikedProductIds(prev => {
+      if (prev.includes(product.id)) {
+        return prev.filter(id => id !== product.id);
+      } else {
+        return [...prev, product.id];
+      }
+    });
   };
 
   const goBack = () => {
@@ -199,10 +276,26 @@ const App: React.FC = () => {
     return [...result].sort((a, b) => b.id - a.id);
   }, [selectedCategory, searchQuery, products]);
 
+  // Derived Data (from stylehub)
+  const wishlistProducts = useMemo(() => 
+    products.filter(p => likedProductIds.includes(p.id)), 
+    [likedProductIds, products]
+  );
+
+  const recentProducts = useMemo(() => 
+    recentProductIds
+      .map(id => products.find(p => p.id === id))
+      .filter((p): p is Product => p !== undefined),
+    [recentProductIds, products]
+  );
+
   // Admin functions
   const handleAdminLogin = () => {
+    console.log('handleAdminLogin 호출됨');
     setIsAdmin(true);
+    localStorage.setItem('isAdmin', 'true');
     setCurrentView('ADMIN_DASHBOARD');
+    console.log('관리자 대시보드로 이동');
   };
 
   const handleAdminLogout = () => {
@@ -277,6 +370,8 @@ const App: React.FC = () => {
                 product={product} 
                 onAddToCart={addToCart} 
                 onClick={goToDetail}
+                isLiked={likedProductIds.includes(product.id)}
+                onToggleLike={toggleLike}
               />
             ))}
           </div>
@@ -318,12 +413,19 @@ const App: React.FC = () => {
 
         <div className="pt-14 overflow-y-auto">
           {/* Image */}
-          <div className="w-full aspect-[4/5] bg-gray-100">
+          <div className="w-full aspect-[4/5] bg-gray-100 relative">
             <img 
               src={selectedProduct.image} 
               alt={selectedProduct.name} 
               className="w-full h-full object-cover"
             />
+            {/* Wishlist Button in Detail View */}
+            <button 
+              onClick={(e) => toggleLike(e, selectedProduct)}
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/60 backdrop-blur-md hover:bg-white transition-colors shadow-sm z-10"
+            >
+              <i className={`${likedProductIds.includes(selectedProduct.id) ? 'fa-solid text-red-500' : 'fa-regular text-gray-800'} fa-heart text-xl`}></i>
+            </button>
           </div>
 
           {/* Product Info */}
@@ -441,17 +543,44 @@ const App: React.FC = () => {
     );
   };
 
-  const MyPageView = () => (
-    <div className="pb-24 px-4 pt-8 bg-white min-h-screen">
-      <div className="flex items-center mb-8">
-        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-            <i className="fa-solid fa-user text-2xl text-gray-400"></i>
+  const MyPageView = () => {
+    if (!currentUser) {
+      return (
+        <div className="pb-24 px-4 pt-8 bg-white min-h-screen flex flex-col items-center justify-center">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fa-solid fa-user text-3xl text-gray-400"></i>
+            </div>
+            <h2 className="text-xl font-bold mb-2">로그인이 필요합니다</h2>
+            <p className="text-sm text-gray-500">로그인하여 더 많은 기능을 이용하세요</p>
+          </div>
+          <button
+            onClick={() => setCurrentView('LOGIN')}
+            className="w-full max-w-xs py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-black to-gray-800 hover:shadow-xl active:scale-[0.98] transition-all"
+          >
+            로그인
+          </button>
         </div>
-        <div className="ml-4">
-            <h2 className="text-xl font-bold">홍길동님</h2>
-            <p className="text-sm text-gray-500">Gold Level</p>
+      );
+    }
+
+    return (
+      <div className="pb-24 px-4 pt-8 bg-white min-h-screen">
+        <div className="flex items-center mb-8">
+          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+              <i className="fa-solid fa-user text-2xl text-gray-400"></i>
+          </div>
+          <div className="ml-4 flex-1">
+              <h2 className="text-xl font-bold">{currentUser.name}님</h2>
+              <p className="text-sm text-gray-500">{currentUser.email}</p>
+          </div>
+          <button
+            onClick={handleUserLogout}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-black transition-colors"
+          >
+            로그아웃
+          </button>
         </div>
-      </div>
 
       {!isAdmin && (
         <div className="mb-6">
@@ -495,7 +624,15 @@ const App: React.FC = () => {
         {['주문 내역', '찜한 상품', '쿠폰함', '최근 본 상품', '설정', '내 사진'].map((menu) => (
             <button 
               key={menu} 
-              onClick={() => menu === '내 사진' ? setCurrentView('MY_PHOTOS') : null}
+              onClick={() => {
+                if (menu === '내 사진') {
+                  setCurrentView('MY_PHOTOS');
+                } else if (menu === '찜한 상품') {
+                  setCurrentView('WISHLIST');
+                } else if (menu === '최근 본 상품') {
+                  setCurrentView('RECENTLY_VIEWED');
+                }
+              }}
               className="w-full flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
             >
                 <span className="font-medium text-gray-700">{menu}</span>
@@ -504,7 +641,8 @@ const App: React.FC = () => {
         ))}
       </div>
     </div>
-  );
+    );
+  };
 
   const MyPhotoView = () => (
     <div className="bg-white min-h-screen relative z-50">
@@ -790,6 +928,25 @@ const App: React.FC = () => {
     );
   };
 
+  // User authentication handlers
+  const handleUserLogin = (user: User) => {
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    setCurrentView('HOME');
+  };
+
+  const handleUserSignup = (user: User) => {
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    setCurrentView('HOME');
+  };
+
+  const handleUserLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('currentUser');
+    setCurrentView('LOGIN');
+  };
+
   // Admin views
   if (currentView === 'ADMIN_LOGIN') {
     return <AdminLogin onLogin={handleAdminLogin} />;
@@ -805,6 +962,45 @@ const App: React.FC = () => {
     );
   }
 
+  // Authentication views
+  if (currentView === 'LOGIN') {
+    return (
+      <Login
+        onLogin={handleUserLogin}
+        onSwitchToSignup={() => setCurrentView('SIGNUP')}
+        onSwitchToFindId={() => setCurrentView('FIND_ID')}
+        onSwitchToFindPassword={() => setCurrentView('FIND_PASSWORD')}
+      />
+    );
+  }
+
+  if (currentView === 'SIGNUP') {
+    return (
+      <Signup
+        onSignup={handleUserSignup}
+        onSwitchToLogin={() => setCurrentView('LOGIN')}
+      />
+    );
+  }
+
+  if (currentView === 'FIND_ID') {
+    return (
+      <FindId
+        onSwitchToLogin={() => setCurrentView('LOGIN')}
+        onSwitchToFindPassword={() => setCurrentView('FIND_PASSWORD')}
+      />
+    );
+  }
+
+  if (currentView === 'FIND_PASSWORD') {
+    return (
+      <FindPassword
+        onSwitchToLogin={() => setCurrentView('LOGIN')}
+        onSwitchToFindId={() => setCurrentView('FIND_ID')}
+      />
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto min-h-screen bg-white relative shadow-2xl overflow-hidden">
       {currentView === 'HOME' && <HomeView />}
@@ -813,6 +1009,25 @@ const App: React.FC = () => {
       {currentView === 'DETAIL' && <DetailView />}
       {currentView === 'MY_PHOTOS' && <MyPhotoView />}
       {currentView === 'AI_STUDIO' && <AiStudioView />}
+      {currentView === 'WISHLIST' && (
+        <WishlistView
+          products={wishlistProducts}
+          onBack={() => setCurrentView('MYPAGE')}
+          onProductClick={goToDetail}
+          onAddToCart={addToCart}
+          onToggleLike={toggleLike}
+        />
+      )}
+      {currentView === 'RECENTLY_VIEWED' && (
+        <RecentlyViewedView
+          products={recentProducts}
+          onBack={() => setCurrentView('MYPAGE')}
+          onProductClick={goToDetail}
+          onAddToCart={addToCart}
+          likedProductIds={likedProductIds}
+          onToggleLike={toggleLike}
+        />
+      )}
       
       {(currentView !== 'DETAIL' && currentView !== 'MY_PHOTOS' && currentView !== 'AI_STUDIO') && (
         <Navbar 
