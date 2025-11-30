@@ -12,22 +12,11 @@ import { RecentlyViewedView } from './components/RecentlyViewedView';
 import { Category, Product, ViewState, CartItem, User } from './types';
 import { CATEGORIES, INITIAL_PRODUCTS } from './constants';
 import { generateFashionImage, editFashionImage, tryOnFashionItem, urlToBase64 } from './services/geminiService';
+import { productService, userService, cartService, wishlistService, recentlyViewedService } from './services/dbService';
 
 const App: React.FC = () => {
-  // Load products from localStorage or use initial products
-  const loadProducts = (): Product[] => {
-    const saved = localStorage.getItem('products');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return INITIAL_PRODUCTS;
-      }
-    }
-    return INITIAL_PRODUCTS;
-  };
-
-  const [products, setProducts] = useState<Product[]>(loadProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -35,28 +24,8 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   // User Features State (from stylehub)
-  const [likedProductIds, setLikedProductIds] = useState<number[]>(() => {
-    const saved = localStorage.getItem('likedProductIds');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
-  const [recentProductIds, setRecentProductIds] = useState<number[]>(() => {
-    const saved = localStorage.getItem('recentProductIds');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [likedProductIds, setLikedProductIds] = useState<number[]>([]);
+  const [recentProductIds, setRecentProductIds] = useState<number[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     return localStorage.getItem('isAdmin') === 'true';
   });
@@ -74,6 +43,110 @@ const App: React.FC = () => {
     return null;
   });
 
+  // Load and save liked products from/to Firebase
+  useEffect(() => {
+    if (currentUser) {
+      const loadWishlist = async () => {
+        try {
+          const wishlist = await wishlistService.getWishlist(currentUser.id);
+          setLikedProductIds(wishlist);
+        } catch (error) {
+          console.error('찜한 상품 로드 실패:', error);
+          // Fallback to localStorage
+          const saved = localStorage.getItem('likedProductIds');
+          if (saved) {
+            try {
+              setLikedProductIds(JSON.parse(saved));
+            } catch {
+              setLikedProductIds([]);
+            }
+          }
+        }
+      };
+      loadWishlist();
+    } else {
+      // 로그인하지 않은 경우 localStorage에서 로드
+      const saved = localStorage.getItem('likedProductIds');
+      if (saved) {
+        try {
+          setLikedProductIds(JSON.parse(saved));
+        } catch {
+          setLikedProductIds([]);
+        }
+      }
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (likedProductIds.length >= 0) {
+      const saveWishlist = async () => {
+        try {
+          if (currentUser) {
+            await wishlistService.updateWishlist(currentUser.id, likedProductIds);
+          }
+          // localStorage에도 백업
+          localStorage.setItem('likedProductIds', JSON.stringify(likedProductIds));
+        } catch (error) {
+          console.error('찜한 상품 저장 실패:', error);
+          localStorage.setItem('likedProductIds', JSON.stringify(likedProductIds));
+        }
+      };
+      saveWishlist();
+    }
+  }, [likedProductIds, currentUser]);
+
+  // Load and save recent products from/to Firebase
+  useEffect(() => {
+    if (currentUser) {
+      const loadRecent = async () => {
+        try {
+          const recent = await recentlyViewedService.getRecentlyViewed(currentUser.id);
+          setRecentProductIds(recent);
+        } catch (error) {
+          console.error('최근 본 상품 로드 실패:', error);
+          // Fallback to localStorage
+          const saved = localStorage.getItem('recentProductIds');
+          if (saved) {
+            try {
+              setRecentProductIds(JSON.parse(saved));
+            } catch {
+              setRecentProductIds([]);
+            }
+          }
+        }
+      };
+      loadRecent();
+    } else {
+      // 로그인하지 않은 경우 localStorage에서 로드
+      const saved = localStorage.getItem('recentProductIds');
+      if (saved) {
+        try {
+          setRecentProductIds(JSON.parse(saved));
+        } catch {
+          setRecentProductIds([]);
+        }
+      }
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (recentProductIds.length >= 0) {
+      const saveRecent = async () => {
+        try {
+          if (currentUser) {
+            await recentlyViewedService.updateRecentlyViewed(currentUser.id, recentProductIds);
+          }
+          // localStorage에도 백업
+          localStorage.setItem('recentProductIds', JSON.stringify(recentProductIds));
+        } catch (error) {
+          console.error('최근 본 상품 저장 실패:', error);
+          localStorage.setItem('recentProductIds', JSON.stringify(recentProductIds));
+        }
+      };
+      saveRecent();
+    }
+  }, [recentProductIds, currentUser]);
+
   // Initialize default admin account if not exists
   useEffect(() => {
     const adminAccounts = JSON.parse(localStorage.getItem('adminAccounts') || '[]');
@@ -89,10 +162,47 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Save products to localStorage whenever products change
+  // Load products from Firebase on mount
   useEffect(() => {
-    localStorage.setItem('products', JSON.stringify(products));
-  }, [products]);
+    const loadProductsFromFirebase = async () => {
+      try {
+        setIsLoadingProducts(true);
+        const firebaseProducts = await productService.getAllProducts();
+        
+        // Firebase에 상품이 없으면 초기 상품을 Firebase에 저장
+        if (firebaseProducts.length === 0) {
+          console.log('Firebase에 상품이 없어 초기 상품을 저장합니다...');
+          for (const product of INITIAL_PRODUCTS) {
+            await productService.saveProduct(product);
+          }
+          setProducts(INITIAL_PRODUCTS);
+        } else {
+          setProducts(firebaseProducts);
+        }
+      } catch (error) {
+        console.error('상품 로드 실패:', error);
+        // Firebase 연결 실패 시 localStorage에서 로드 (fallback)
+        const saved = localStorage.getItem('products');
+        if (saved) {
+          try {
+            setProducts(JSON.parse(saved));
+          } catch {
+            setProducts(INITIAL_PRODUCTS);
+          }
+        } else {
+          setProducts(INITIAL_PRODUCTS);
+        }
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    loadProductsFromFirebase();
+  }, []);
+
+  // Save products to Firebase whenever products change (단, handleUpdateProducts에서 처리하지 않은 경우만)
+  // 주의: handleUpdateProducts에서 이미 Firebase에 저장/삭제하므로, 여기서는 초기 로드 후 자동 저장만 처리
+  // 이 useEffect는 handleUpdateProducts와 중복 저장을 방지하기 위해 제거하거나 조건부로 실행
 
   // Check admin status on mount and redirect to admin dashboard if logged in
   useEffect(() => {
@@ -143,10 +253,20 @@ const App: React.FC = () => {
     setCurrentView('DETAIL');
     
     // Add to Recently Viewed
-    setRecentProductIds(prev => {
-      const newIds = [product.id, ...prev.filter(id => id !== product.id)];
-      return newIds.slice(0, 30); // 최대 30개만 저장
-    });
+    if (currentUser) {
+      setRecentProductIds(prev => {
+        const newIds = [product.id, ...prev.filter(id => id !== product.id)];
+        return newIds.slice(0, 30); // 최대 30개만 저장
+      });
+    } else {
+      // 로그인하지 않은 경우 localStorage에만 저장
+      setRecentProductIds(prev => {
+        const newIds = [product.id, ...prev.filter(id => id !== product.id)];
+        const limited = newIds.slice(0, 30);
+        localStorage.setItem('recentProductIds', JSON.stringify(limited));
+        return limited;
+      });
+    }
   };
 
   const toggleLike = (e: React.MouseEvent, product: Product) => {
@@ -304,8 +424,42 @@ const App: React.FC = () => {
     setCurrentView('HOME');
   };
 
-  const handleUpdateProducts = (updatedProducts: Product[]) => {
+  const handleUpdateProducts = async (updatedProducts: Product[]) => {
+    // 이전 products와 비교하여 삭제된 상품 찾기
+    const deletedProducts = products.filter(
+      oldProduct => !updatedProducts.find(newProduct => newProduct.id === oldProduct.id)
+    );
+    
+    // 삭제된 상품을 Firebase에서도 삭제
+    for (const deletedProduct of deletedProducts) {
+      try {
+        await productService.deleteProduct(deletedProduct.id);
+        console.log(`✅ 상품 삭제됨 (Firebase): ${deletedProduct.name} (ID: ${deletedProduct.id})`);
+      } catch (error) {
+        console.error(`❌ 상품 삭제 실패 (Firebase): ${deletedProduct.name}`, error);
+        // Firebase 삭제 실패해도 로컬 state는 업데이트
+      }
+    }
+    
+    // 추가/수정된 상품을 Firebase에 저장
+    const addedOrUpdatedProducts = updatedProducts.filter(newProduct => {
+      const oldProduct = products.find(p => p.id === newProduct.id);
+      return !oldProduct || JSON.stringify(oldProduct) !== JSON.stringify(newProduct);
+    });
+    
+    for (const product of addedOrUpdatedProducts) {
+      try {
+        await productService.saveProduct(product);
+        console.log(`✅ 상품 저장됨 (Firebase): ${product.name} (ID: ${product.id})`);
+      } catch (error) {
+        console.error(`❌ 상품 저장 실패 (Firebase): ${product.name}`, error);
+      }
+    }
+    
+    // 로컬 state 업데이트
     setProducts(updatedProducts);
+    // localStorage에도 백업 저장
+    localStorage.setItem('products', JSON.stringify(updatedProducts));
   };
 
   // --- Views ---
