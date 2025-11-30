@@ -3,7 +3,7 @@ import { Navbar } from './components/Navbar';
 import { ProductCard } from './components/ProductCard';
 import { Category, Product, ViewState, CartItem } from './types';
 import { CATEGORIES, INITIAL_PRODUCTS } from './constants';
-import { searchProductsWithAI, generateFashionImage, editFashionImage, tryOnFashionItem, urlToBase64 } from './services/geminiService';
+import { generateFashionImage, editFashionImage, tryOnFashionItem, urlToBase64 } from './services/geminiService';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
@@ -11,8 +11,6 @@ const App: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>('전체');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAiMode, setIsAiMode] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   
   // My Photo Logic
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -28,9 +26,6 @@ const App: React.FC = () => {
   const [useMyPhoto, setUseMyPhoto] = useState(false);
   const [selectedCartItemId, setSelectedCartItemId] = useState<number | null>(null);
   const [isCartSelectorOpen, setIsCartSelectorOpen] = useState(false);
-
-  // Products filtered by AI search results (list of IDs)
-  const [aiFilteredIds, setAiFilteredIds] = useState<number[] | null>(null);
 
   // Helper to add items to cart
   const addToCart = (product: Product) => {
@@ -73,24 +68,6 @@ const App: React.FC = () => {
         setUseMyPhoto(true); // Auto-enable my photo usage when uploading
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  // Handle Search Execution
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setAiFilteredIds(null);
-      return;
-    }
-
-    if (isAiMode) {
-      setIsSearching(true);
-      const ids = await searchProductsWithAI(searchQuery, INITIAL_PRODUCTS);
-      setAiFilteredIds(ids);
-      setIsSearching(false);
-    } else {
-      // Standard search is handled by the useMemo below immediately
-      setAiFilteredIds(null);
     }
   };
 
@@ -155,17 +132,15 @@ const App: React.FC = () => {
       result = result.filter(p => p.category === selectedCategory);
     }
 
-    // 2. Search Filter (AI vs Standard)
-    if (isAiMode && aiFilteredIds !== null) {
-      result = result.filter(p => aiFilteredIds.includes(p.id));
-    } else if (!isAiMode && searchQuery.trim()) {
+    // 2. Search Filter (Standard)
+    if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(p => p.name.toLowerCase().includes(q));
     }
 
     // 3. Sort Descending (by ID for "Newest" simulation as requested)
     return [...result].sort((a, b) => b.id - a.id);
-  }, [selectedCategory, searchQuery, isAiMode, aiFilteredIds]);
+  }, [selectedCategory, searchQuery]);
 
   // --- Views ---
 
@@ -184,29 +159,13 @@ const App: React.FC = () => {
              <div className="relative flex-1">
                 <input 
                   type="text"
-                  placeholder={isAiMode ? "AI에게 물어보세요" : "상품 검색"}
-                  className={`w-full h-10 pl-9 pr-3 rounded-lg text-sm transition-all border ${
-                    isAiMode ? 'border-purple-300 bg-purple-50 focus:ring-purple-500' : 'border-gray-200 bg-gray-50 focus:ring-black'
-                  } focus:outline-none focus:ring-1`}
+                  placeholder="상품 검색"
+                  className="w-full h-10 pl-9 pr-3 rounded-lg text-sm transition-all border border-gray-200 bg-gray-50 focus:ring-black focus:outline-none focus:ring-1"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
-                <i className={`fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm`}></i>
+                <i className="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
              </div>
-
-             {/* AI Toggle Button */}
-             <button 
-                onClick={() => {
-                  setIsAiMode(!isAiMode);
-                  setAiFilteredIds(null); // Reset filters when toggling
-                }}
-                className={`flex items-center justify-center h-10 w-10 rounded-lg border transition-colors shrink-0 ${
-                  isAiMode ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-200' : 'bg-white border-gray-200 text-gray-500'
-                }`}
-             >
-               <i className="fa-solid fa-wand-magic-sparkles"></i>
-             </button>
           </div>
 
           {/* Categories */}
@@ -232,7 +191,7 @@ const App: React.FC = () => {
       <main className="px-4 pt-4">
         <div className="flex justify-between items-end mb-4">
           <h2 className="text-lg font-bold text-gray-900">
-            {isSearching ? 'AI가 상품을 찾고 있습니다...' : `상품 목록 (${filteredProducts.length})`}
+            {`상품 목록 (${filteredProducts.length})`}
           </h2>
           <span className="text-xs text-gray-500">신상품순</span>
         </div>
