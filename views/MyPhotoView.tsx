@@ -20,16 +20,9 @@ export const MyPhotoView: React.FC<MyPhotoViewProps> = ({
   onBack,
 }) => {
   return (
-    <div className="bg-white min-h-screen relative z-50">
-      <header className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-100 flex items-center px-4 z-10 max-w-md mx-auto">
-        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center -ml-2 text-gray-800">
-          <i className="fa-solid fa-arrow-left text-xl"></i>
-        </button>
-        <div className="flex-1 text-center font-bold text-lg">내 사진</div>
-        <div className="w-10"></div>
-      </header>
-
-      <div className="pt-20 px-4 pb-24 flex flex-col items-center justify-center min-h-[80vh]">
+    <div className="bg-white min-h-screen relative z-40 pt-14">
+      <div className="pt-14 px-4 pb-24 flex flex-col items-center justify-center min-h-screen">
+        <h2 className="text-2xl font-bold my-4">내 사진</h2>
         {userPhoto ? (
           <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-lg border border-gray-100">
             <img src={userPhoto} alt="My Photo" className="w-full h-auto object-cover" />
@@ -106,4 +99,3 @@ export const MyPhotoView: React.FC<MyPhotoViewProps> = ({
     </div>
   );
 };
-

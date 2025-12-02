@@ -41,15 +41,8 @@ export const AiCoordinatorView: React.FC<AiCoordinatorViewProps> = ({
   };
 
   return (
-    <div className="pb-24">
-      <header className="sticky top-0 bg-white z-40 shadow-sm px-4 py-3">
-        <h1 className="text-xl font-bold text-center">AI 코디네이터</h1>
-        <p className="text-center text-sm text-gray-500 mt-1">
-          원하는 스타일을 알려주시면 상품을 추천해드려요.
-        </p>
-      </header>
-
-      <main className="px-4 pt-6">
+    <div className="pb-24 pt-14">
+      <main className="px-4 pt-4">
         <div className="flex items-center gap-2 mb-6">
           <div className="relative flex-1">
             <input

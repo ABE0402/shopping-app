@@ -128,46 +128,58 @@ export const editFashionImage = async (base64Image: string, prompt: string): Pro
     return await runGenAI(prompt, [{ mime: matches[1], data: matches[2] }]);
 };
 
-export const tryOnFashionItem = async (userImageBase64: string, productImageBase64: string, userRequest: string): Promise<string | null> => {
-    // 1. 이미지 데이터 추출
-    const userMatches = userImageBase64.match(/^data:(.+);base64,(.+)$/);
-    const productMatches = productImageBase64.match(/^data:(.+);base64,(.+)$/);
-    if (!userMatches || !productMatches) throw new Error("이미지 형식 오류");
+export const tryOnFashionItem = async (
+  userImageBase64: string, 
+  productImageBase64: string, 
+  prompt: string
+): Promise<string | null> => {
+  const userMatches = userImageBase64.match(/^data:(.+);base64,(.+)$/);
+  const productMatches = productImageBase64.match(/^data:(.+);base64,(.+)$/);
+  
+  if (!userMatches || !productMatches) {
+    throw new Error("이미지 형식 오류");
+  }
+  
+  // 옷만 정확히 교체하고 나머지는 그대로 유지하는 프롬프트
+  const fullPrompt = `CLOTHING REPLACEMENT ONLY - Virtual Try-On.
 
-    // 2. [핵심] 시스템 프롬프트 구성 (단계별 사고 유도)
-    const systemPrompt = `
-    You are a professional AI Photo Editor specialized in virtual fashion try-ons.
-    
-    [INPUTS]
-    - IMAGE 1 (Reference): The User (Target Person).
-    - IMAGE 2 (Garment): The Clothing Product.
+TASK: Replace ONLY the clothing in the first image (person photo) with the clothing from the second image (product photo). Keep EVERYTHING ELSE exactly the same.
 
-    [TASK]
-    Digitally dress the person in IMAGE 1 with the clothing from IMAGE 2. 
-    This is a photo editing task, NOT a new image generation task.
+ABSOLUTE REQUIREMENTS - DO NOT CHANGE:
+1. PERSON (100% PRESERVE):
+   - Keep the EXACT same face, facial features, expression, and identity
+   - Maintain the EXACT same pose, body position, and stance
+   - Preserve the EXACT same body shape, proportions, and physical characteristics
+   - Keep the EXACT same skin tone, hair color, and hair style
+   - Maintain the EXACT same hands, arms, legs position
 
-    [EXECUTION STEPS - FOLLOW STRICTLY]
-    1. **Analyze Body & Pose**: Identify the body shape and pose of the person in IMAGE 1.
-    2. **Analyze Garment**: Understand the texture, fabric, and style of the clothing in IMAGE 2.
-    3. **Virtual Mapping**: Warp and map the clothing from IMAGE 2 onto the body of IMAGE 1.
-    4. **Refining**: Adjust lighting, shadows, and wrinkles of the clothing to match the environment of IMAGE 1.
-    5. **Final Check**: Ensure the face, hair, and background of IMAGE 1 remain 100% UNCHANGED.
+2. BACKGROUND (100% PRESERVE):
+   - Keep the EXACT same background from the first image
+   - Do NOT change, modify, or recreate the background
+   - Maintain the EXACT same lighting, shadows, and environment
 
-    [CRITICAL CONSTRAINTS]
-    - **DO NOT CHANGE THE FACE**: The face in the output MUST be identical to IMAGE 1.
-    - **DO NOT CHANGE THE BACKGROUND**: Keep the background consistent with IMAGE 1.
-    - **REALISM**: The clothing must look like it is actually worn, not just pasted on top.
-    - **COMPLETE VIEW**: Ensure the person's head and the styled outfit are fully visible.
+3. PHOTOGRAPHY STYLE (100% PRESERVE):
+   - Keep the EXACT same camera angle and perspective
+   - Maintain the EXACT same lighting conditions and direction
+   - Preserve the EXACT same image quality, resolution, and style
 
-    [USER REQUEST]
-    ${userRequest || "얼굴 보이게 합성해줘"}
-    `;
+ONLY CHANGE:
+- Replace ONLY the clothing/garment visible in the first image
+- Use the clothing design, color, pattern, and style from the second image
+- Make the new clothing fit naturally on the person's body
+- Ensure the clothing matches the person's pose and body shape
+- Add realistic shadows and highlights that match the original lighting
 
-    // 3. AI 실행
-    return await runGenAI(systemPrompt, [
-        { mime: userMatches[1], data: userMatches[2] },
-        { mime: productMatches[1], data: productMatches[2] }
-    ]);
+CRITICAL: This is a CLOTHING REPLACEMENT task, NOT image generation. The output should look like the first image with ONLY the clothing changed. Everything else must remain identical.
+
+ADDITIONAL INSTRUCTIONS: ${prompt}
+
+OUTPUT: Generate ONLY the image with clothing replaced. Do not provide any text description.`;
+  
+  return await runGenAI(fullPrompt, [
+    { mime: userMatches[1], data: userMatches[2] },
+    { mime: productMatches[1], data: productMatches[2] }
+  ]);
 };
 
 // 검색 기능 (유지)

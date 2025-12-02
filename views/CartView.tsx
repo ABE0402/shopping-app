@@ -15,7 +15,7 @@ export const CartView: React.FC<CartViewProps> = ({
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
   return (
-    <div className="pb-24 px-4 pt-6 min-h-screen bg-gray-50">
+    <div className="pb-24 px-4 pt-14 min-h-screen bg-gray-50">
       <h2 className="text-2xl font-bold mb-6">장바구니</h2>
       {cartItems.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
@@ -53,12 +53,12 @@ export const CartView: React.FC<CartViewProps> = ({
             ))}
           </div>
           
-          <div className="fixed bottom-[64px] left-0 right-0 bg-white border-t p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-            <div className="max-w-md mx-auto flex justify-between items-center mb-4">
+          <div className="fixed bottom-[64px] inset-x-0 max-w-md mx-auto bg-white border-t p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-between items-center mb-4">
               <span className="text-gray-600">총 결제금액</span>
               <span className="text-xl font-bold text-blue-600">{totalAmount.toLocaleString()}원</span>
             </div>
-            <button className="w-full bg-black text-white py-3.5 rounded-xl font-bold text-lg active:scale-[0.99] transition-transform mx-auto max-w-md block">
+            <button className="w-full bg-black text-white py-3.5 rounded-xl font-bold text-lg active:scale-[0.99] transition-transform">
               구매하기
             </button>
           </div>
@@ -67,4 +67,3 @@ export const CartView: React.FC<CartViewProps> = ({
     </div>
   );
 };
-

@@ -5,8 +5,8 @@ import { Login } from './components/Login';
 import { Signup } from './components/Signup';
 import { FindId } from './components/FindId';
 import { FindPassword } from './components/FindPassword';
-import { WishlistView } from './components/WishlistView';
-import { RecentlyViewedView } from './components/RecentlyViewedView';
+import { WishlistView } from './views/WishlistView';
+import { RecentlyViewedView } from './views/RecentlyView';
 import { Category, Product, ViewState } from './types';
 import { useProducts } from './hooks/useProducts';
 import { useAuth } from './useAuth';
@@ -109,7 +109,9 @@ const App: React.FC = () => {
 
   const goBack = () => {
     setSelectedProduct(null);
-    setCurrentView('HOME');
+    // 현재 뷰에 따라 적절한 이전 화면으로 이동
+    const fromAiCoordinator = currentView === 'AI_COORDINATOR';
+    setCurrentView(fromAiCoordinator ? 'HOME' : 'HOME'); // 현재는 모두 HOME으로 가지만, 추후 분기 가능
   };
 
   const handleGoToAiStudio = (product: Product) => {
@@ -161,13 +163,17 @@ const App: React.FC = () => {
       <GlobalHeader
         title={
           currentView === 'DETAIL' ? selectedProduct?.name :
-          currentView === 'LOGIN' ? '로그인' :
+          currentView === 'WISHLIST' ? '찜한 상품' :
+          currentView === 'RECENTLY_VIEWED' ? '최근 본 상품' :
+          currentView === 'MY_PHOTOS' ? '내 사진' :
+          currentView === 'AI_COORDINATOR' ? 'AI 코디네이터' :
+          currentView === 'LOGIN' ? '로그인' : // 다른 뷰들도 필요시 추가
           undefined
         }
-        onBack={goBack}
+         onBack={goBack}
         onGoToHome={() => setCurrentView('HOME')}
         onGoToDashboard={() => setCurrentView('ADMIN_DASHBOARD')}
-        showBack={currentView !== 'HOME'}
+        showBack={!['HOME', 'CART', 'MYPAGE', 'AI_COORDINATOR'].includes(currentView)}
         isAdmin={isAdmin}
       />
       {currentView === 'HOME' && (
