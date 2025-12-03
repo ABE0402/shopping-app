@@ -1,0 +1,7 @@
+{
+  "name": "StyleHub",
+  "description": "A modern Korean fashion shopping mall with AI-powered search.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
