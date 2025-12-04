@@ -97,12 +97,12 @@ npm run preview
 
 ```mermaid
 graph TD
-    %% 스타일 정의
-    classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
-    classDef view fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
-    classDef service fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
-    classDef firebase fill:#ffccbc,stroke:#bf360c,stroke-width:2px,color:#bf360c;
-    classDef external fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
+    %% 스타일 정의 (배경은 흰색, 테두리로 구분)
+    classDef client fill:#ffffff,stroke:#1565c0,stroke-width:2px,color:#333333;
+    classDef view fill:#ffffff,stroke:#fbc02d,stroke-width:2px,color:#333333;
+    classDef service fill:#ffffff,stroke:#7b1fa2,stroke-width:2px,color:#333333;
+    classDef firebase fill:#ffffff,stroke:#bf360c,stroke-width:2px,color:#333333;
+    classDef external fill:#ffffff,stroke:#2e7d32,stroke-width:2px,color:#333333;
 
     %% 1. Client 영역
     subgraph Client ["Client Side (React/Vite)"]
@@ -159,7 +159,7 @@ graph TD
     %% 뷰와 로직 연결
     Views -->|Action| Logic
     
-    %% 구매 프로세스 흐름 추가
+    %% 구매 프로세스 흐름
     Detail -.->|구매 버튼| Checkout
     Checkout -->|결제 완료| OrderLogic
     OrderLogic -->|주문 저장| DBService
