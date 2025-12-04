@@ -105,14 +105,14 @@ graph TD
     classDef external fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
 
     %% 1. Client 영역
-    subgraph Client ["💻 Client Side (React/Vite)"]
+    subgraph Client ["Client Side (React/Vite)"]
         direction TB
         User(사용자/관리자):::client
         
         subgraph Frontend ["React Application"]
             App["App.tsx<br/>(Main Controller & Router)"]:::client
             
-            subgraph Views ["🖥️ UI Views (화면)"]
+            subgraph Views ["UI Views (화면)"]
                 Home["HomeView<br/>(상품 목록)"]:::view
                 Detail["DetailView<br/>(상품 상세)"]:::view
                 Cart["CartView<br/>(장바구니)"]:::view
@@ -122,13 +122,13 @@ graph TD
                 Admin["AdminDashboard<br/>(상품 관리)"]:::view
             end
             
-            subgraph Logic ["⚙️ Business Logic & Hooks"]
+            subgraph Logic ["Business Logic & Hooks"]
                 AuthState["useAuth<br/>(인증 상태)"]:::service
                 DataState["useCart / useProducts<br/>(데이터 관리)"]:::service
                 AiHooks["useAiStudio / useAiCoordinator<br/>(AI 로직)"]:::service
             end
 
-            subgraph Services ["🔌 Service Layer"]
+            subgraph Services ["Service Layer"]
                 GeminiService["GeminiService.ts<br/>(AI API Wrapper)"]:::service
                 DBService["dbService.ts<br/>(Database Wrapper)"]:::service
             end
@@ -136,14 +136,14 @@ graph TD
     end
 
     %% 2. Backend 영역 (Firebase)
-    subgraph Firebase ["🔥 Backend (Firebase SaaS)"]
+    subgraph Firebase ["Backend (Firebase SaaS)"]
         FB_Auth[("Authentication<br/>(로그인/계정)")]:::firebase
         FB_DB[("Firestore DB<br/>(상품/주문/유저 데이터)")]:::firebase
         FB_Storage[("Storage<br/>(이미지 파일)")]:::firebase
     end
 
     %% 3. External 영역 (AI)
-    subgraph External ["🤖 External AI Services"]
+    subgraph External ["External AI Services"]
         GoogleAI["Google Gemini API<br/>(Gemini 2.0 Flash / Imagen)"]:::external
     end
 
