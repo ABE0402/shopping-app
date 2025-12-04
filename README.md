@@ -97,57 +97,81 @@ npm run preview
 
 ```mermaid
 graph TD
-    %% 스타일 정의 (색상 꾸미기)
-    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef server fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef firebase fill:#ffccbc,stroke:#bf360c,stroke-width:2px;
+    %% 스타일 정의 (색상 테마: Blue & Orange)
+    classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
+    classDef view fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
+    classDef service fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef firebase fill:#ffccbc,stroke:#bf360c,stroke-width:2px,color:#bf360c;
+    classDef external fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
 
-    %% Client 영역 (파란색)
-    subgraph Client ["사용자 브라우저 (Client-Side)"]
+    %% 1. Client 영역
+    subgraph Client ["💻 Client Side (React/Vite)"]
         direction TB
-        User(사용자):::client
+        User(사용자/관리자):::client
         
-        subgraph Frontend ["React App (Vite)"]
-            App["App.tsx <br/>(메인 컨트롤러)"]:::client
+        subgraph Frontend ["React Application"]
+            App["App.tsx<br/>(Main Controller & Router)"]:::client
             
-            subgraph Views ["화면 (Views)"]
-                Home[홈]
-                Detail[상세]
-                Cart[장바구니]
-                MyPage[마이페이지]
-                AiStudio[AI 스튜디오]
+            subgraph Views ["🖥️ UI Views (화면)"]
+                Home[HomeView<br/>(상품 목록)]:::view
+                Detail[DetailView<br/>(상품 상세)]:::view
+                Cart[CartView<br/>(장바구니)]:::view
+                MyPage[MyPageView<br/>(마이페이지)]:::view
+                AiStudio[AiStudioView<br/>(가상 피팅/생성)]:::view
+                AiCoord[AiCoordinatorView<br/>(AI 코디 추천)]:::view
+                Admin[AdminDashboard<br/>(상품 관리)]:::view
             end
             
-            subgraph Logic ["핵심 로직"]
-                State[상태 관리]
-                GeminiService[AI 서비스 핸들러]
+            subgraph Logic ["⚙️ Business Logic & Hooks"]
+                AuthState[useAuth<br/>(인증 상태)]:::service
+                DataState[useCart / useProducts<br/>(데이터 관리)]:::service
+                AiHooks[useAiStudio / useAiCoordinator<br/>(AI 로직)]:::service
+            end
+
+            subgraph Services ["🔌 Service Layer"]
+                GeminiService["GeminiService.ts<br/>(AI API Wrapper)"]:::service
+                DBService["dbService.ts<br/>(Database Wrapper)"]:::service
             end
         end
     end
 
-    %% Backend 영역 (파이어베이스 - 붉은색)
-    subgraph Firebase ["Firebase (Backend-as-a-Service)"]
-        FB_Auth[("Authentication<br/>(로그인/회원가입)")]:::firebase
-        FB_DB[("Cloud Firestore<br/>(상품/장바구니 데이터)")]:::firebase
+    %% 2. Backend 영역 (Firebase)
+    subgraph Firebase ["🔥 Backend (Firebase SaaS)"]
+        FB_Auth[("Authentication<br/>(로그인/계정)")]:::firebase
+        FB_DB[("Firestore DB<br/>(상품/주문/유저 데이터)")]:::firebase
+        FB_Storage[("Storage<br/>(이미지 파일)")]:::firebase
     end
 
-    %% External 영역 (주황색)
-    subgraph External ["외부 서비스"]
-        GoogleAI["Google Gemini API<br/>(Gemini 2.0 Flash / Imagen 3)"]:::server
+    %% 3. External 영역 (AI)
+    subgraph External ["🤖 External AI Services"]
+        GoogleAI["Google Gemini API<br/>(Gemini 2.0 Flash / Imagen)"]:::external
     end
 
-    %% 화살표 연결
-    User -->|클릭/입력| App
-    App -->|화면 전환| Views
-    Views -->|데이터 요청| State
+    %% -- 관계 연결 (Flow) --
     
-    %% 로컬 저장소 대신 파이어베이스 연결
-    State <-->|SDK 로그인 요청| FB_Auth
-    State <-->|실시간 데이터 동기화| FB_DB
+    %% 사용자 인터랙션
+    User -->|접속/입력| App
+    App -->|라우팅| Views
     
-    AiStudio —>|이미지 생성 요청| GeminiService
-    GeminiService —>|API 호출| GoogleAI
-    GoogleAI —>|생성된 이미지 반환| GeminiService
+    %% 뷰와 로직 연결
+    Views -->|Action| Logic
+    
+    %% 로직과 서비스 연결
+    AuthState -->|로그인 요청| DBService
+    DataState -->|데이터 CRUD| DBService
+    AiHooks -->|생성 요청| GeminiService
+    
+    %% 서비스와 외부 리소스 연결
+    DBService <-->|SDK 호출| FB_Auth
+    DBService <-->|R/W| FB_DB
+    DBService <-->|Upload/Download| FB_Storage
+    
+    GeminiService <-->|API Request/Response| GoogleAI
+    
+    %% 주요 기능 하이라이트
+    AiStudio -.->|이미지 생성| GeminiService
+    AiCoord -.->|코디 제안| GeminiService
+    Admin -.->|상품 등록/수정| DataState
 ```
 
 
