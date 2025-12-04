@@ -93,6 +93,64 @@ npm run preview
 
 개발 서버가 실행되면 브라우저에서 `http://localhost:5173` (또는 표시된 포트)로 접속하세요.
 
+# 시스템 구성도
+
+```mermaid
+graph TD
+    %% 스타일 정의 (색상 꾸미기)
+    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef server fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef firebase fill:#ffccbc,stroke:#bf360c,stroke-width:2px;
+
+    %% Client 영역 (파란색)
+    subgraph Client ["사용자 브라우저 (Client-Side)"]
+        direction TB
+        User(사용자):::client
+        
+        subgraph Frontend ["React App (Vite)"]
+            App["App.tsx <br/>(메인 컨트롤러)"]:::client
+            
+            subgraph Views ["화면 (Views)"]
+                Home[홈]
+                Detail[상세]
+                Cart[장바구니]
+                MyPage[마이페이지]
+                AiStudio[AI 스튜디오]
+            end
+            
+            subgraph Logic ["핵심 로직"]
+                State[상태 관리]
+                GeminiService[AI 서비스 핸들러]
+            end
+        end
+    end
+
+    %% Backend 영역 (파이어베이스 - 붉은색)
+    subgraph Firebase ["Firebase (Backend-as-a-Service)"]
+        FB_Auth[("Authentication<br/>(로그인/회원가입)")]:::firebase
+        FB_DB[("Cloud Firestore<br/>(상품/장바구니 데이터)")]:::firebase
+    end
+
+    %% External 영역 (주황색)
+    subgraph External ["외부 서비스"]
+        GoogleAI["Google Gemini API<br/>(Gemini 2.0 Flash / Imagen 3)"]:::server
+    end
+
+    %% 화살표 연결
+    User -->|클릭/입력| App
+    App -->|화면 전환| Views
+    Views -->|데이터 요청| State
+    
+    %% 로컬 저장소 대신 파이어베이스 연결
+    State <-->|SDK 로그인 요청| FB_Auth
+    State <-->|실시간 데이터 동기화| FB_DB
+    
+    AiStudio —>|이미지 생성 요청| GeminiService
+    GeminiService —>|API 호출| GoogleAI
+    GoogleAI —>|생성된 이미지 반환| GeminiService
+```
+
+
 ## 프로젝트 구조
 
 ```
