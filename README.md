@@ -97,7 +97,7 @@ npm run preview
 
 ```mermaid
 graph TD
-    %% 스타일 정의 (색상 테마: Blue & Orange)
+    %% 스타일 정의
     classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
     classDef view fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
     classDef service fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
@@ -116,15 +116,18 @@ graph TD
                 Home["HomeView<br/>(상품 목록)"]:::view
                 Detail["DetailView<br/>(상품 상세)"]:::view
                 Cart["CartView<br/>(장바구니)"]:::view
+                Checkout["CheckoutView<br/>(주문/결제)"]:::view
+                OrderHistory["OrderHistoryView<br/>(주문 내역)"]:::view
                 MyPage["MyPageView<br/>(마이페이지)"]:::view
-                AiStudio["AiStudioView<br/>(가상 피팅/생성)"]:::view
-                AiCoord["AiCoordinatorView<br/>(AI 코디 추천)"]:::view
+                AiStudio["AiStudioView<br/>(가상 피팅)"]:::view
+                AiCoord["AiCoordinatorView<br/>(AI 코디)"]:::view
                 Admin["AdminDashboard<br/>(상품 관리)"]:::view
             end
             
             subgraph Logic ["Business Logic & Hooks"]
                 AuthState["useAuth<br/>(인증 상태)"]:::service
                 DataState["useCart / useProducts<br/>(데이터 관리)"]:::service
+                OrderLogic["useOrders<br/>(주문 처리)"]:::service
                 AiHooks["useAiStudio / useAiCoordinator<br/>(AI 로직)"]:::service
             end
 
@@ -156,7 +159,16 @@ graph TD
     %% 뷰와 로직 연결
     Views -->|Action| Logic
     
-    %% 로직과 서비스 연결
+    %% 구매 프로세스 흐름 추가
+    Detail -.->|구매 버튼| Checkout
+    Checkout -->|결제 완료| OrderLogic
+    OrderLogic -->|주문 저장| DBService
+    
+    %% 주문 내역 확인 흐름
+    MyPage -->|내역 조회| OrderHistory
+    OrderHistory -.->|데이터 요청| OrderLogic
+
+    %% 기존 로직 연결
     AuthState -->|로그인 요청| DBService
     DataState -->|데이터 CRUD| DBService
     AiHooks -->|생성 요청| GeminiService
@@ -168,7 +180,7 @@ graph TD
     
     GeminiService <-->|API Request/Response| GoogleAI
     
-    %% 주요 기능 하이라이트
+    %% 주요 기능 연결
     AiStudio -.->|이미지 생성| GeminiService
     AiCoord -.->|코디 제안| GeminiService
     Admin -.->|상품 등록/수정| DataState
