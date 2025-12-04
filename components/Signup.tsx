@@ -64,24 +64,39 @@ export const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => 
     setIsLoading(true);
     
     try {
-      // localStorage에서 기존 사용자 확인
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      // Firebase에서 사용자 서비스 가져오기
+      const { userService } = await import('../services/dbService');
       
-      // 아이디 중복 확인
-      if (users.some((u: any) => u.id === formData.id)) {
+      // 1. Firebase에서 아이디 중복 확인
+      const existingUser = await userService.getUser(formData.id);
+      if (existingUser) {
         setErrors({ id: '이미 사용 중인 아이디입니다.' });
         setIsLoading(false);
         return;
       }
 
-      // 이메일 중복 확인
+      // 2. Firebase에서 이메일 중복 확인
+      const existingEmailUser = await userService.getUserByEmail(formData.email);
+      if (existingEmailUser) {
+        setErrors({ email: '이미 사용 중인 이메일입니다.' });
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. localStorage에서도 중복 확인 (하위 호환성)
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      if (users.some((u: any) => u.id === formData.id)) {
+        setErrors({ id: '이미 사용 중인 아이디입니다.' });
+        setIsLoading(false);
+        return;
+      }
       if (users.some((u: any) => u.email === formData.email)) {
         setErrors({ email: '이미 사용 중인 이메일입니다.' });
         setIsLoading(false);
         return;
       }
 
-      // 새 사용자 추가
+      // 4. Firebase에 새 사용자 저장
       const newUser = {
         id: formData.id,
         password: formData.password,
@@ -91,10 +106,13 @@ export const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => 
         createdAt: new Date().toISOString()
       };
 
+      await userService.saveUser(newUser);
+
+      // 5. localStorage에도 저장 (하위 호환성)
       users.push(newUser);
       localStorage.setItem('users', JSON.stringify(users));
 
-      // 자동 로그인
+      // 6. 자동 로그인
       const userData = {
         id: newUser.id,
         name: newUser.name,
@@ -102,8 +120,9 @@ export const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => 
       };
       localStorage.setItem('currentUser', JSON.stringify(userData));
       onSignup(userData);
-    } catch (err) {
-      setErrors({ submit: '회원가입 중 오류가 발생했습니다.' });
+    } catch (err: any) {
+      console.error('회원가입 오류:', err);
+      setErrors({ submit: err.message || '회원가입 중 오류가 발생했습니다.' });
     } finally {
       setIsLoading(false);
     }

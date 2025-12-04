@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============ Products (상품) ============
+    // 모든 사용자가 읽기 가능, 쓰기도 허용 (테스트용)
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true; // 테스트용
+    }
+    
+    // ============ Users (사용자) ============
+    // 모든 사용자가 읽기/쓰기 가능 (테스트 모드)
+    match /users/{userId} {
+      allow read, write: if true; // 테스트 모드 - 모든 접근 허용
+      
+      // 장바구니
+      match /cart/{cartItemId} {
+        allow read, write: if true; // 테스트 모드
+      }
+    }
+    
+    // ============ Orders (주문내역) ============
+    match /orders/{orderId} {
+      allow read, write: if true; // 테스트 모드
+    }
+    
+    // ============ Admin Orders (관리자 주문내역) ============
+    match /adminOrders/{orderId} {
+      allow read, write: if true; // 테스트 모드
+    }
+    
+    // ============ User Photos (내 사진) ============
+    match /userPhotos/{photoId} {
+      allow read, write: if true; // 테스트 모드
+    }
+    
+    // 기본적으로 모든 접근 허용 (테스트 모드)
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

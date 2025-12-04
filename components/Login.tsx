@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface LoginProps {
-  onLogin: (user: { id: string; password: string }) => any;
+  onLogin: (user: { id: string; password: string }) => Promise<any>;
   onSwitchToSignup: () => void;
   onSwitchToFindId: () => void;
   onSwitchToFindPassword: () => void;
@@ -32,7 +32,7 @@ export const Login: React.FC<LoginProps> = ({
     setIsLoading(true);
     
     try {
-      const result = onLogin(formData);
+      const result = await onLogin(formData);
       // App.tsx에서 loginResult가 null이면 로그인 실패를 의미
       if (!result) {
         setError('아이디 또는 비밀번호가 올바르지 않습니다.');

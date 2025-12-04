@@ -1,0 +1,27 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ============ User Photos (사용자 사진) ============
+    // 경로: userPhotos/{userId}/{photoId}.jpg
+    match /userPhotos/{userId}/{photoId} {
+      // 자신의 사진만 읽을 수 있음
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // 자신의 사진만 업로드할 수 있음
+      allow write: if request.auth != null && 
+                      request.auth.uid == userId &&
+                      request.resource.size < 10 * 1024 * 1024 && // 10MB 제한
+                      request.resource.contentType.matches('image/.*');
+      
+      // 자신의 사진만 삭제할 수 있음
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 다른 경로는 기본적으로 거부
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

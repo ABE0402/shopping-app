@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { CartItem } from '../types';
 import { generateFashionImage, editFashionImage, tryOnFashionItem, urlToBase64 } from '../services/geminiService';
+import { userPhotoService } from '../services/dbService';
 
-export const useAiStudio = (cartItems: CartItem[], selectedCartItemId: number | null) => {
+export const useAiStudio = (cartItems: CartItem[], selectedCartItemId: number | null, userId?: string) => {
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [isPhotoSheetOpen, setIsPhotoSheetOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -62,6 +63,25 @@ export const useAiStudio = (cartItems: CartItem[], selectedCartItemId: number | 
       
       if (result) {
         setGeneratedImage(result);
+        
+        // 생성된 이미지를 Firebase에 저장 (나노바나나로 합성된 사진)
+        if (userId && result) {
+          try {
+            const productId = cartItem?.id;
+            const productName = cartItem?.name;
+            await userPhotoService.addUserPhoto(
+              userId,
+              result,
+              productId,
+              productName,
+              aiPrompt || undefined
+            );
+            console.log('생성된 이미지가 Firebase에 저장되었습니다.');
+          } catch (saveError) {
+            console.error('이미지 저장 실패:', saveError);
+            // 저장 실패해도 이미지는 표시되도록 함
+          }
+        }
       } else {
         // geminiService에서 로그를 찍었으므로 여기선 간단히 알림
         alert("이미지를 생성하지 못했습니다. (AI가 이미지를 반환하지 않음)");
