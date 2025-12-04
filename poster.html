@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>withmall - 판넬 포스터</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        background: #0a0a0a;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .download-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: background 0.3s ease;
+      }
+
+      .download-btn:hover {
+        background: #5568d3;
+      }
+
+      .download-btn:active {
+        transform: scale(0.98);
+      }
+
+      .poster {
+        width: 1200px;
+        height: 1800px;
+        background: linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #1e1b4b 50%,
+          #312e81 100%
+        );
+        padding: 60px 80px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* 코스믹 배경 효과 */
+      .poster::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(
+            2px 2px at 20% 30%,
+            white,
+            transparent
+          ),
+          radial-gradient(
+            2px 2px at 60% 70%,
+            rgba(255, 255, 255, 0.8),
+            transparent
+          ),
+          radial-gradient(1px 1px at 50% 50%, white, transparent),
+          radial-gradient(
+            1px 1px at 80% 10%,
+            rgba(255, 255, 255, 0.6),
+            transparent
+          ),
+          radial-gradient(2px 2px at 90% 80%, white, transparent),
+          radial-gradient(
+            1px 1px at 33% 85%,
+            rgba(255, 255, 255, 0.7),
+            transparent
+          );
+        background-size: 200% 200%, 150% 150%, 100% 100%, 120% 120%, 180% 180%,
+          110% 110%;
+        animation: stars 20s linear infinite;
+        opacity: 0.6;
+        z-index: 0;
+      }
+
+      @keyframes stars {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(-50px, -50px);
+        }
+      }
+
+      /* 상단 타이틀 */
+      .title-section {
+        position: relative;
+        z-index: 2;
+        margin-bottom: 40px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+      }
+
+      .main-title {
+        font-size: 64px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 25px;
+      }
+
+      .main-title-logo {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+      }
+
+      .subtitle {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 400;
+      }
+
+      /* 중앙 손과 메인 스마트폰 */
+      .hand-phone-container {
+        position: absolute;
+        top: 600px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 600px;
+      }
+
+      .hand-phone-container-2 {
+        position: absolute;
+        top: 140px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 600px;
+      }
+
+      .hand {
+        display: none; /* 손가락 숨김 */
+      }
+
+      .main-phone {
+        position: relative;
+        width: 180px;
+        height: 360px;
+        background: #1a1a1a;
+        border-radius: 25px;
+        padding: 10px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 2px #333;
+        z-index: 10;
+      }
+
+      .phone-screen {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 12px;
+        padding: 12px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .phone-screen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        display: none;
+      }
+
+      .phone-screen img[src]:not([src=""]) {
+        display: block !important;
+      }
+
+      .phone-screen:has(img[src]:not([src=""])) .phone-content,
+      .phone-screen:has(img[src]:not([src=""])) .phone-header {
+        display: none;
+      }
+
+      .phone-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .phone-logo {
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .phone-menu {
+        width: 20px;
+        height: 2px;
+        background: white;
+        position: relative;
+      }
+
+      .phone-menu::before,
+      .phone-menu::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 2px;
+        background: white;
+      }
+
+      .phone-menu::before {
+        top: -6px;
+      }
+
+      .phone-menu::after {
+        top: 6px;
+      }
+
+      .phone-content {
+        color: white;
+      }
+
+      .phone-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .phone-subtitle {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 15px;
+      }
+
+      .phone-nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .nav-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(102, 126, 234, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: white;
+      }
+
+      .nav-icon.active {
+        background: #667eea;
+      }
+
+      .phone-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px;
+        margin-top: 8px;
+      }
+
+      .card-title {
+        font-size: 10px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .card-image {
+        width: 100%;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 6px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+      }
+
+      .card-price {
+        font-size: 9px;
+        color: #667eea;
+        font-weight: 600;
+      }
+
+      /* 주변 떠다니는 스마트폰들 */
+      .floating-phone {
+        position: absolute;
+        width: 180px;
+        height: 360px;
+        background: #1a1a1a;
+        border-radius: 25px;
+        padding: 10px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 2px #333;
+        z-index: 2;
+      }
+
+      .floating-phone-1 {
+        top: 150px;
+        left: 50px;
+        transform: rotate(-10deg);
+        animation: float1 6s ease-in-out infinite;
+      }
+
+      .floating-phone-2 {
+        top: 200px;
+        right: 80px;
+        transform: rotate(15deg);
+        animation: float2 7s ease-in-out infinite;
+      }
+
+      .floating-phone-3 {
+        bottom: 300px;
+        left: 100px;
+        transform: rotate(-5deg);
+        animation: float3 8s ease-in-out infinite;
+      }
+
+      .floating-phone-4 {
+        bottom: 250px;
+        right: 60px;
+        transform: rotate(10deg);
+        animation: float4 6.5s ease-in-out infinite;
+      }
+
+      /* 데스크탑 모니터 스타일 */
+      .floating-desktop {
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .desktop-monitor {
+        width: 280px;
+        height: 200px;
+        background: #1a1a1a;
+        border-radius: 8px 8px 0 0;
+        padding: 12px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 2px #333;
+        position: relative;
+      }
+
+      .desktop-screen {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 4px;
+        padding: 18px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .desktop-screen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        display: none;
+      }
+
+      .desktop-screen img[src]:not([src=""]) {
+        display: block !important;
+      }
+
+      .desktop-screen:has(img[src]:not([src=""])) .screen-header,
+      .desktop-screen:has(img[src]:not([src=""])) .screen-content {
+        display: none;
+      }
+
+      .desktop-screen .screen-header {
+        margin-bottom: 15px;
+      }
+
+      .desktop-screen .screen-title {
+        font-size: 14px;
+      }
+
+      .desktop-screen .screen-content {
+        font-size: 12px;
+      }
+
+      .desktop-screen .screen-item {
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .desktop-screen .screen-item-title {
+        font-size: 11px;
+        margin-bottom: 5px;
+      }
+
+      .desktop-screen .screen-item-desc {
+        font-size: 9px;
+      }
+
+      .desktop-screen .screen-button {
+        padding: 8px 16px;
+        font-size: 10px;
+        margin-top: 10px;
+      }
+
+      .desktop-stand {
+        width: 120px;
+        height: 20px;
+        background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        margin-top: -2px;
+      }
+
+      .desktop-base {
+        width: 180px;
+        height: 8px;
+        background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+        border-radius: 4px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      .floating-desktop-1 {
+        bottom: 400px;
+        left: 100px;
+        transform: rotate(-5deg);
+        animation: float3 8s ease-in-out infinite;
+      }
+
+      .floating-desktop-2 {
+        bottom: 350px;
+        right: 60px;
+        transform: rotate(10deg);
+        animation: float4 6.5s ease-in-out infinite;
+      }
+
+      @keyframes float1 {
+        0%,
+        100% {
+          transform: rotate(-10deg) translateY(0);
+        }
+        50% {
+          transform: rotate(-10deg) translateY(-20px);
+        }
+      }
+
+      @keyframes float2 {
+        0%,
+        100% {
+          transform: rotate(15deg) translateY(0);
+        }
+        50% {
+          transform: rotate(15deg) translateY(-25px);
+        }
+      }
+
+      @keyframes float3 {
+        0%,
+        100% {
+          transform: rotate(-5deg) translateY(0);
+        }
+        50% {
+          transform: rotate(-5deg) translateY(-15px);
+        }
+      }
+
+      @keyframes float4 {
+        0%,
+        100% {
+          transform: rotate(10deg) translateY(0);
+        }
+        50% {
+          transform: rotate(10deg) translateY(-20px);
+        }
+      }
+
+      .floating-screen {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 15px;
+        padding: 15px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .floating-screen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 15px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        display: none;
+      }
+
+      .floating-screen img[src]:not([src=""]) {
+        display: block !important;
+      }
+
+      .floating-screen:has(img[src]:not([src=""])) .screen-content {
+        display: none;
+      }
+
+      .floating-screen:has(img[src]:not([src=""])) .screen-header {
+        display: none;
+      }
+
+      .screen-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .screen-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .screen-content {
+        color: white;
+        font-size: 11px;
+      }
+
+      .screen-item {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
+      }
+
+      .screen-item-title {
+        font-size: 10px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .screen-item-desc {
+        font-size: 8px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .screen-button {
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 9px;
+        font-weight: 600;
+        margin-top: 8px;
+        cursor: pointer;
+      }
+
+      /* 연결선 효과 */
+      .connection-line {
+        position: absolute;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(102, 126, 234, 0.3),
+          transparent
+        );
+        height: 2px;
+        z-index: 1;
+      }
+
+      .connection-line-1 {
+        top: 350px;
+        left: 250px;
+        width: 200px;
+        transform: rotate(15deg);
+      }
+
+      .connection-line-2 {
+        top: 400px;
+        right: 300px;
+        width: 180px;
+        transform: rotate(-20deg);
+      }
+
+      /* 좌우 사이드 섹션 */
+      .side-section {
+        position: absolute;
+        z-index: 2;
+        width: 280px;
+      }
+
+      .side-section-left {
+        top: 650px;
+        left: 80px;
+      }
+
+      .side-section-right {
+        top: 650px;
+        right: 80px;
+      }
+
+      .side-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .features-compact {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 30px;
+      }
+
+      .feature-compact {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+      }
+
+      .feature-compact-icon {
+        font-size: 20px;
+        color: #667eea;
+        margin-bottom: 6px;
+      }
+
+      .feature-compact-name {
+        font-size: 11px;
+        font-weight: 600;
+        color: white;
+      }
+
+      .system-compact {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .system-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .system-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+
+      .system-icon {
+        width: 30px;
+        height: 30px;
+        background: rgba(102, 126, 234, 0.3);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        font-size: 14px;
+        color: #667eea;
+      }
+
+      .system-info {
+        flex: 1;
+      }
+
+      .system-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 2px;
+      }
+
+      .system-desc {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* 프로젝트 목표 섹션 */
+      .project-goals {
+        position: absolute;
+        bottom: 200px;
+        left: 80px;
+        right: 80px;
+        z-index: 2;
+      }
+
+      .project-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .goals-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .goal-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 25px;
+        transition: transform 0.3s ease, background 0.3s ease;
+      }
+
+      .goal-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .goal-number {
+        font-size: 36px;
+        font-weight: 900;
+        color: #667eea;
+        margin-bottom: 10px;
+      }
+
+      .goal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 10px;
+      }
+
+      .goal-description {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+      }
+
+      /* 프로젝트 개요 */
+      .project-overview {
+        position: absolute;
+        bottom: 60px;
+        left: 80px;
+        right: 80px;
+        z-index: 2;
+        padding-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .overview-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 12px;
+      }
+
+      .overview-text {
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.8;
+      }
+
+      @media print {
+        @page {
+          size: B4 landscape;
+          margin: 0;
+        }
+
+        body {
+          background: white;
+          padding: 0;
+          margin: 0;
+        }
+
+        .poster {
+          width: 100%;
+          height: auto;
+          max-width: 100%;
+          max-height: 100vh;
+          page-break-after: always;
+          box-shadow: none;
+          margin: 0;
+          padding: 60px 80px;
+          transform: scale(0.7);
+          transform-origin: top left;
+        }
+
+        .floating-phone {
+          animation: none;
+        }
+
+        .floating-desktop {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="poster">
+      <!-- 상단 타이틀 -->
+      <div class="title-section">
+        <div class="main-title">
+          <img src="image7.png" alt="WithMall 로고" class="main-title-logo" />
+          <span>WithMall</span>
+        </div>
+      </div>
+
+      <!-- 중앙 메인 스마트폰 1 -->
+      <div class="hand-phone-container">
+        <div class="main-phone">
+          <div class="phone-screen">
+            <!-- AI 가상 피팅 이미지 -->
+            <img src="image3.png" alt="AI 가상 피팅 화면" />
+            <div class="phone-header">
+              <div class="phone-logo">withmall</div>
+              <div class="phone-menu"></div>
+            </div>
+            <div class="phone-content">
+              <div class="phone-title">AI 가상 피팅</div>
+              <div class="phone-subtitle">내 사진에 옷을 입혀보세요</div>
+              <div class="phone-nav">
+                <div class="nav-icon active">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="nav-icon">
+                  <i class="fa-solid fa-palette"></i>
+                </div>
+                <div class="nav-icon">
+                  <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+                <div class="nav-icon"><i class="fa-solid fa-clock"></i></div>
+              </div>
+              <div class="phone-card">
+                <div class="card-title">인기 상품</div>
+                <div class="card-image">
+                  <i class="fa-solid fa-shirt"></i>
+                </div>
+                <div class="card-price">₩89,000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 중앙 메인 스마트폰 2 -->
+      <div class="hand-phone-container-2">
+        <div class="main-phone">
+          <div class="phone-screen">
+            <!-- 이미지6 -->
+            <img src="image6.png" alt="스마트폰 화면" />
+            <div class="phone-header">
+              <div class="phone-logo">withmall</div>
+              <div class="phone-menu"></div>
+            </div>
+            <div class="phone-content">
+              <div class="phone-title">AI 코디</div>
+              <div class="phone-subtitle">스타일 추천받기</div>
+              <div class="phone-nav">
+                <div class="nav-icon">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="nav-icon active">
+                  <i class="fa-solid fa-palette"></i>
+                </div>
+                <div class="nav-icon">
+                  <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+                <div class="nav-icon"><i class="fa-solid fa-clock"></i></div>
+              </div>
+              <div class="phone-card">
+                <div class="card-title">추천 상품</div>
+                <div class="card-image">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div class="card-price">₩45,000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 연결선 -->
+      <div class="connection-line connection-line-1"></div>
+      <div class="connection-line connection-line-2"></div>
+
+      <!-- 좌측: 주요 기능 -->
+      <div class="side-section side-section-left">
+        <div class="side-title">주요 기능</div>
+        <div class="features-compact">
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-house"></i>
+            </div>
+            <div class="feature-compact-name">상품 탐색</div>
+          </div>
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <div class="feature-compact-name">장바구니</div>
+          </div>
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="feature-compact-name">마이페이지</div>
+          </div>
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div class="feature-compact-name">AI 가상 피팅</div>
+          </div>
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-palette"></i>
+            </div>
+            <div class="feature-compact-name">AI 코디</div>
+          </div>
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-heart"></i>
+            </div>
+            <div class="feature-compact-name">위시리스트</div>
+          </div>
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="feature-compact-name">최근 본 상품</div>
+          </div>
+          <div class="feature-compact">
+            <div class="feature-compact-icon">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="feature-compact-name">관리자</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우측: 시스템 구성도 -->
+      <div class="side-section side-section-right">
+        <div class="side-title">시스템 구성도</div>
+        <div class="system-compact">
+          <div class="system-item">
+            <div class="system-icon"><i class="fa-brands fa-react"></i></div>
+            <div class="system-info">
+              <div class="system-name">Frontend</div>
+              <div class="system-desc">React + TypeScript</div>
+            </div>
+          </div>
+          <div class="system-item">
+            <div class="system-icon"><i class="fa-solid fa-brain"></i></div>
+            <div class="system-info">
+              <div class="system-name">AI Service</div>
+              <div class="system-desc">Gemini API</div>
+            </div>
+          </div>
+          <div class="system-item">
+            <div class="system-icon"><i class="fa-brands fa-google"></i></div>
+            <div class="system-info">
+              <div class="system-name">Backend</div>
+              <div class="system-desc">Firebase</div>
+            </div>
+          </div>
+          <div class="system-item">
+            <div class="system-icon"><i class="fa-solid fa-key"></i></div>
+            <div class="system-info">
+              <div class="system-name">Auth</div>
+              <div class="system-desc">Firebase Auth</div>
+            </div>
+          </div>
+          <div class="system-item">
+            <div class="system-icon"><i class="fa-solid fa-database"></i></div>
+            <div class="system-info">
+              <div class="system-name">Database</div>
+              <div class="system-desc">Firestore</div>
+            </div>
+          </div>
+          <div class="system-item">
+            <div class="system-icon"><i class="fa-solid fa-cloud"></i></div>
+            <div class="system-info">
+              <div class="system-name">Storage</div>
+              <div class="system-desc">Firebase Storage</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 주변 떠다니는 스마트폰들 -->
+      <!-- 왼쪽 스마트폰: 홈 화면 -->
+      <div class="floating-phone floating-phone-1">
+        <div class="floating-screen">
+          <!-- 홈 화면 이미지 -->
+          <img src="image1.png" alt="홈 화면" />
+          <div class="screen-header">
+            <div
+              class="screen-title"
+              style="
+                font-size: 10px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+              "
+            >
+              <i class="fa-solid fa-bag-shopping" style="font-size: 8px"></i>
+              <span>WM</span>
+            </div>
+            <div class="phone-menu"></div>
+          </div>
+          <div class="screen-content">
+            <div
+              style="
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 6px;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+              "
+            >
+              <i
+                class="fa-solid fa-magnifying-glass"
+                style="font-size: 8px"
+              ></i>
+              <span style="font-size: 8px; color: rgba(255, 255, 255, 0.6)"
+                >상품 검색</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                gap: 4px;
+                margin-bottom: 8px;
+                overflow-x: auto;
+              "
+            >
+              <div
+                style="
+                  background: rgba(102, 126, 234, 0.3);
+                  border-radius: 12px;
+                  padding: 4px 8px;
+                  font-size: 7px;
+                  white-space: nowrap;
+                "
+              >
+                전체
+              </div>
+              <div
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  border-radius: 12px;
+                  padding: 4px 8px;
+                  font-size: 7px;
+                  white-space: nowrap;
+                "
+              >
+                상의
+              </div>
+              <div
+                style="
+                  background: rgba(255, 255, 255, 0.1);
+                  border-radius: 12px;
+                  padding: 4px 8px;
+                  font-size: 7px;
+                  white-space: nowrap;
+                "
+              >
+                하의
+              </div>
+            </div>
+            <div style="font-size: 8px; font-weight: 600; margin-bottom: 6px">
+              상품 목록 (12)
+            </div>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px"
+            >
+              <div class="screen-item" style="padding: 4px; margin: 0">
+                <div
+                  style="
+                    width: 100%;
+                    height: 40px;
+                    background: linear-gradient(
+                      135deg,
+                      #667eea 0%,
+                      #764ba2 100%
+                    );
+                    border-radius: 4px;
+                    margin-bottom: 3px;
+                  "
+                ></div>
+                <div
+                  style="font-size: 7px; margin-bottom: 2px; line-height: 1.2"
+                >
+                  둥근코 통 굽 롱 부츠
+                </div>
+                <div
+                  style="
+                    font-size: 6px;
+                    color: rgba(255, 255, 255, 0.5);
+                    margin-bottom: 2px;
+                  "
+                >
+                  ★0 (0)
+                </div>
+                <div style="font-size: 8px; font-weight: 600; color: #667eea">
+                  38,600원
+                </div>
+              </div>
+              <div class="screen-item" style="padding: 4px; margin: 0">
+                <div
+                  style="
+                    width: 100%;
+                    height: 40px;
+                    background: linear-gradient(
+                      135deg,
+                      #667eea 0%,
+                      #764ba2 100%
+                    );
+                    border-radius: 4px;
+                    margin-bottom: 3px;
+                  "
+                ></div>
+                <div
+                  style="font-size: 7px; margin-bottom: 2px; line-height: 1.2"
+                >
+                  드로우 스트링백팩
+                </div>
+                <div
+                  style="
+                    font-size: 6px;
+                    color: rgba(255, 255, 255, 0.5);
+                    margin-bottom: 2px;
+                  "
+                >
+                  ★0 (0)
+                </div>
+                <div style="font-size: 8px; font-weight: 600; color: #667eea">
+                  33,300원
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 오른쪽 스마트폰: AI 코디네이터 화면 -->
+      <div class="floating-phone floating-phone-2">
+        <div class="floating-screen">
+          <!-- AI 코디네이터 화면 이미지 -->
+          <img src="image2.png" alt="AI 코디네이터 화면" />
+          <div class="screen-header">
+            <div class="screen-title" style="font-size: 10px">
+              AI 코디네이터
+            </div>
+            <div class="phone-menu"></div>
+          </div>
+          <div class="screen-content">
+            <div
+              style="
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 6px;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+              "
+            >
+              <span style="font-size: 8px; flex: 1">귀여운 커플 옷</span>
+              <i
+                class="fa-solid fa-wand-magic-sparkles"
+                style="font-size: 8px; color: #667eea"
+              ></i>
+            </div>
+            <button
+              class="screen-button"
+              style="width: 100%; margin-bottom: 8px"
+            >
+              추천받기
+            </button>
+            <div
+              style="
+                background: rgba(102, 126, 234, 0.2);
+                border-radius: 6px;
+                padding: 6px;
+                margin-bottom: 8px;
+                display: flex;
+                gap: 6px;
+                align-items: start;
+              "
+            >
+              <i
+                class="fa-solid fa-lightbulb"
+                style="font-size: 8px; color: #667eea; margin-top: 2px"
+              ></i>
+              <span style="font-size: 7px; line-height: 1.4"
+                >뽀글이 맨투맨과 체크 패딩으로 귀여움과 트렌디함을 동시에 잡는
+                커플룩을 연출하여 사랑스러움을 뽐내보세요.</span
+              >
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+                margin-bottom: 8px;
+              "
+            >
+              <div class="screen-item" style="padding: 4px; margin: 0">
+                <div
+                  style="
+                    width: 100%;
+                    height: 35px;
+                    background: linear-gradient(
+                      135deg,
+                      #667eea 0%,
+                      #764ba2 100%
+                    );
+                    border-radius: 4px;
+                    margin-bottom: 3px;
+                    position: relative;
+                  "
+                >
+                  <i
+                    class="fa-regular fa-heart"
+                    style="
+                      position: absolute;
+                      top: 4px;
+                      right: 4px;
+                      font-size: 8px;
+                    "
+                  ></i>
+                </div>
+                <div
+                  style="font-size: 7px; margin-bottom: 2px; line-height: 1.2"
+                >
+                  뽀글이 양털 USA 자수맨투맨
+                </div>
+                <div
+                  style="
+                    font-size: 6px;
+                    color: rgba(255, 255, 255, 0.5);
+                    margin-bottom: 2px;
+                  "
+                >
+                  ★0 (0)
+                </div>
+                <div style="font-size: 8px; font-weight: 600; color: #667eea">
+                  22,900원
+                </div>
+              </div>
+              <div class="screen-item" style="padding: 4px; margin: 0">
+                <div
+                  style="
+                    width: 100%;
+                    height: 35px;
+                    background: linear-gradient(
+                      135deg,
+                      #667eea 0%,
+                      #764ba2 100%
+                    );
+                    border-radius: 4px;
+                    margin-bottom: 3px;
+                    position: relative;
+                  "
+                >
+                  <i
+                    class="fa-regular fa-heart"
+                    style="
+                      position: absolute;
+                      top: 4px;
+                      right: 4px;
+                      font-size: 8px;
+                    "
+                  ></i>
+                </div>
+                <div
+                  style="font-size: 7px; margin-bottom: 2px; line-height: 1.2"
+                >
+                  체크패딩 무지가지겨울때!
+                </div>
+                <div
+                  style="
+                    font-size: 6px;
+                    color: rgba(255, 255, 255, 0.5);
+                    margin-bottom: 2px;
+                  "
+                >
+                  ★0 (0)
+                </div>
+                <div style="font-size: 8px; font-weight: 600; color: #667eea">
+                  73,900원
+                </div>
+              </div>
+            </div>
+            <div style="font-size: 8px; font-weight: 600; margin-bottom: 6px">
+              함께 코디하면 좋은 아이템
+            </div>
+            <div
+              style="
+                font-size: 7px;
+                color: rgba(255, 255, 255, 0.6);
+                margin-bottom: 6px;
+              "
+            >
+              AI가 추천하는 추가 아이템으로 룩을 완성해보세요.
+            </div>
+            <div style="font-size: 7px; font-weight: 600; margin-bottom: 4px">
+              하의
+            </div>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px"
+            >
+              <div
+                style="
+                  width: 100%;
+                  height: 30px;
+                  background: linear-gradient(135deg, #8b7355 0%, #6b5d4f 100%);
+                  border-radius: 4px;
+                  position: relative;
+                "
+              >
+                <i
+                  class="fa-regular fa-heart"
+                  style="
+                    position: absolute;
+                    top: 3px;
+                    right: 3px;
+                    font-size: 7px;
+                  "
+                ></i>
+              </div>
+              <div
+                style="
+                  width: 100%;
+                  height: 30px;
+                  background: linear-gradient(135deg, #87ceeb 0%, #4682b4 100%);
+                  border-radius: 4px;
+                  position: relative;
+                "
+              >
+                <i
+                  class="fa-regular fa-heart"
+                  style="
+                    position: absolute;
+                    top: 3px;
+                    right: 3px;
+                    font-size: 7px;
+                  "
+                ></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 데스크탑 1: 상품 상세 -->
+      <div class="floating-desktop floating-desktop-1">
+        <div class="desktop-monitor">
+          <div class="desktop-screen">
+            <!-- 상품 상세 이미지 -->
+            <img src="image4.png" alt="상품 상세 화면" />
+            <div class="screen-header">
+              <div class="screen-title">상품 상세</div>
+              <div class="phone-menu"></div>
+            </div>
+            <div class="screen-content">
+              <div class="screen-item">
+                <div class="screen-item-title">상품 정보</div>
+                <div class="screen-item-desc">사이즈, 색상 확인</div>
+              </div>
+              <button class="screen-button">장바구니</button>
+            </div>
+          </div>
+        </div>
+        <div class="desktop-stand"></div>
+        <div class="desktop-base"></div>
+      </div>
+
+      <!-- 데스크탑 2: 가상 피팅 -->
+      <div class="floating-desktop floating-desktop-2">
+        <div class="desktop-monitor">
+          <div class="desktop-screen">
+            <!-- 가상 피팅 이미지 -->
+            <img src="image5.png" alt="가상 피팅 화면" />
+            <div class="screen-header">
+              <div class="screen-title">가상 피팅</div>
+              <div class="phone-menu"></div>
+            </div>
+            <div class="screen-content">
+              <div class="screen-item">
+                <div class="screen-item-title">착용 미리보기</div>
+                <div class="screen-item-desc">구매 전 확인하세요</div>
+              </div>
+              <button class="screen-button">시작하기</button>
+            </div>
+          </div>
+        </div>
+        <div class="desktop-stand"></div>
+        <div class="desktop-base"></div>
+      </div>
+
+      <!-- 프로젝트 목표 -->
+      <div class="project-goals">
+        <div class="project-title">프로젝트 목표</div>
+        <div class="goals-grid">
+          <div class="goal-card">
+            <div class="goal-number">01</div>
+            <div class="goal-title">온라인 구매 한계 해결</div>
+            <div class="goal-description">
+              가상 피팅으로 구매 전 착용 모습을 확인하여 체형·분위기와
+              어울리는지 직관적으로 판단할 수 있습니다.
+            </div>
+          </div>
+          <div class="goal-card">
+            <div class="goal-number">02</div>
+            <div class="goal-title">코디 매칭 불편 해결</div>
+            <div class="goal-description">
+              AI 코디 매칭으로 보유 의류와의 조합을 미리 확인하여 시간과 노력
+              없이 완벽한 스타일을 완성합니다.
+            </div>
+          </div>
+          <div class="goal-card">
+            <div class="goal-number">03</div>
+            <div class="goal-title">반품·교환 비용 절감</div>
+            <div class="goal-description">
+              구매 전 정확한 확인으로 반품을 최소화하여 택배비·재포장 비용 없이
+              경제적인 쇼핑을 경험합니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프로젝트 개요 -->
+      <div class="project-overview">
+        <div class="overview-title">프로젝트 개요</div>
+        <div class="overview-text">
+          withmall은 AI 기술을 활용하여 온라인 쇼핑의 세 가지 핵심 문제를
+          해결하는 스마트 패션 쇼핑 플랫폼입니다. 모바일 우선 접근 방식으로
+          설계되어 모든 기기에서 완벽한 사용자 경험을 제공하며, 직관적인
+          인터페이스와 명확한 버튼으로 누구나 쉽게 AI 가상 피팅과 코디 매칭을
+          이용할 수 있습니다. 더 스마트하고, 더 경제적이며, 더 만족스러운 온라인
+          쇼핑 경험을 제공합니다.
+        </div>
+      </div>
+    </div>
+    <!-- 이미지 다운로드 버튼 -->
+    <button class="download-btn" onclick="downloadPoster()">
+      <i class="fa-solid fa-download"></i> 이미지 저장
+    </button>
+
+    <script>
+      async function downloadPoster() {
+        const poster = document.querySelector(".poster");
+        const button = document.querySelector(".download-btn");
+
+        // 버튼 비활성화
+        button.disabled = true;
+        button.textContent = "처리 중...";
+
+        try {
+          // html2canvas로 포스터를 캔버스로 변환
+          const canvas = await html2canvas(poster, {
+            backgroundColor: null,
+            scale: 2, // 고해상도
+            logging: false,
+            useCORS: true,
+            allowTaint: true,
+          });
+
+          // 캔버스를 이미지로 변환
+          const imgData = canvas.toDataURL("image/png");
+
+          // 다운로드 링크 생성
+          const link = document.createElement("a");
+          link.download = "withmall-poster.png";
+          link.href = imgData;
+          link.click();
+
+          // 버튼 복원
+          button.disabled = false;
+          button.innerHTML = '<i class="fa-solid fa-download"></i> 이미지 저장';
+        } catch (error) {
+          console.error("이미지 추출 실패:", error);
+          alert("이미지 추출에 실패했습니다. 콘솔을 확인해주세요.");
+          button.disabled = false;
+          button.innerHTML = '<i class="fa-solid fa-download"></i> 이미지 저장';
+        }
+      }
+    </script>
+  </body>
+</html>
