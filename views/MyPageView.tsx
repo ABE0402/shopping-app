@@ -10,6 +10,7 @@ interface MyPageViewProps {
   onGoToMyPhotos: () => void;
   onGoToWishlist: () => void;
   onGoToRecentlyViewed: () => void;
+  onGoToOrderHistory: () => void;
 }
 
 export const MyPageView: React.FC<MyPageViewProps> = ({
@@ -21,7 +22,13 @@ export const MyPageView: React.FC<MyPageViewProps> = ({
   onGoToMyPhotos,
   onGoToWishlist,
   onGoToRecentlyViewed,
+  onGoToOrderHistory,
 }) => {
+  // 알림 함수 추가
+  const showPrepareAlert = () => {
+    alert("아직 준비중인 서비스입니다.");
+  };
+
   if (!currentUser) {
     return (
       <div className="pb-24 pt-14 px-4 bg-white min-h-screen flex flex-col items-center justify-center">
@@ -63,31 +70,13 @@ export const MyPageView: React.FC<MyPageViewProps> = ({
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="mb-6">
-          <button 
-            onClick={onGoToAiStudio}
-            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-xl shadow-lg shadow-purple-200 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                <i className="fa-solid fa-wand-magic-sparkles text-lg"></i>
-              </div>
-              <div className="text-left">
-                <div className="font-bold text-sm">AI 패션 스튜디오</div>
-                <div className="text-xs text-purple-100 opacity-90">Nano Banana 모델로 스타일링</div>
-              </div>
-            </div>
-            <i className="fa-solid fa-chevron-right text-sm opacity-50"></i>
-          </button>
-        </div>
-
         <div className="space-y-2">
           {[
-            { label: '주문 내역', action: () => {} },
+            { label: '주문 내역', action: onGoToOrderHistory },
             { label: '찜한 상품', action: onGoToWishlist },
-            { label: '쿠폰함', action: () => {} },
+            { label: '쿠폰함', action: showPrepareAlert },    // ✅ [수정됨] 클릭 시 알림 표시
             { label: '최근 본 상품', action: onGoToRecentlyViewed },
-            { label: '설정', action: () => {} },
+            { label: '설정', action: showPrepareAlert },      // 여기도 준비중 처리
             { label: '내 사진', action: onGoToMyPhotos },
           ].map((menu) => (
             <button 
