@@ -11,6 +11,7 @@ interface MyPageViewProps {
   onGoToWishlist: () => void;
   onGoToRecentlyViewed: () => void;
   onGoToOrderHistory: () => void;
+  onGoToAiHistory: () => void;
 }
 
 export const MyPageView: React.FC<MyPageViewProps> = ({
@@ -23,6 +24,7 @@ export const MyPageView: React.FC<MyPageViewProps> = ({
   onGoToWishlist,
   onGoToRecentlyViewed,
   onGoToOrderHistory,
+  onGoToAiHistory,
 }) => {
   // 알림 함수 추가
   const showPrepareAlert = () => {
@@ -77,6 +79,7 @@ export const MyPageView: React.FC<MyPageViewProps> = ({
             { label: '쿠폰함', action: showPrepareAlert },    // ✅ [수정됨] 클릭 시 알림 표시
             { label: '최근 본 상품', action: onGoToRecentlyViewed },
             { label: '설정', action: showPrepareAlert },      // 여기도 준비중 처리
+            { label: 'AI 생성 기록', action: onGoToAiHistory }, // 버튼 추가
             { label: '내 사진', action: onGoToMyPhotos },
           ].map((menu) => (
             <button 

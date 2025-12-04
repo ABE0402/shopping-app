@@ -201,16 +201,17 @@ export const AiStudioView: React.FC<AiStudioViewProps> = ({
             
             <button 
               onClick={onAiGeneration}
-              // [수정] !aiPrompt.trim() 조건을 제거했습니다. 이제 입력 없이도 버튼이 활성화됩니다.
-              disabled={isGenerating || (selectedCartItem && !userPhoto)}
+              // [수정] isGenerating이 true라도 generatedImage가 있으면 버튼 비활성화를 해제합니다.
+              disabled={(isGenerating && !generatedImage) || (selectedCartItem && !userPhoto)}
               className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
-                isGenerating || (selectedCartItem && !userPhoto)
+                (isGenerating && !generatedImage) || (selectedCartItem && !userPhoto)
                 ? 'bg-gray-300 cursor-not-allowed' 
                 : 'bg-gradient-to-r from-black to-gray-800 active:scale-[0.98]'
               }`}
             >
-              {isGenerating ? (
-                '생성 중...' 
+              {/* [수정] isGenerating이 true라도 generatedImage가 있으면 기본 텍스트를 보여줍니다. */}
+              {isGenerating && !generatedImage ? (
+                '생성 중...'
               ) : (
                 <>
                   <i className="fa-solid fa-bolt"></i>

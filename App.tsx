@@ -4,7 +4,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { Login } from './components/Login';
 import { Signup } from './components/Signup';
 import { FindId } from './components/FindId';
-import { FindPassword } from './components/FindPassword';
+import { FindPassword } from './components/FindPassword'; // AiHistoryItem 타입 정의
 import { WishlistView } from './views/WishlistView';
 import { RecentlyViewedView } from './views/RecentlyView';
 import { Category, Product, ViewState, OrderItem } from './types'; // OrderItem 타입 추가
@@ -27,6 +27,15 @@ import LoadingScreen from './components/LoadingScreen';
 import { CheckoutView } from './views/CheckoutView'; 
 import { useOrders } from './hooks/useOrders';
 import { OrderHistoryView } from './views/OrderHistoryView'; 
+import { AiHistoryView } from './views/AiHistoryView';
+
+// types.ts에 있어야 할 타입이지만, 편의상 여기에 정의합니다.
+export interface AiHistoryItem {
+  id: string;
+  generatedImage: string;
+  title: string;
+  timestamp: number;
+}
 
 const App: React.FC = () => {
   // 1. 기본 상태 (State)
@@ -36,6 +45,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [orderItem, setOrderItem] = useState<OrderItem | null>(null);
+  const [aiHistory, setAiHistory] = useState<AiHistoryItem[]>([]);
 
   // 2. 로딩 효과 (useEffect)
   useEffect(() => {    
@@ -77,6 +87,20 @@ const App: React.FC = () => {
     handlePhotoSelect,
     handleAiGeneration,
   } = useAiStudio(cartItems, selectedCartItemId, currentUser?.id);
+
+  // AI 스튜디오에서 이미지 생성이 완료되면 기록에 추가
+  useEffect(() => {
+    if (generatedImage && !aiHistory.some(item => item.generatedImage === generatedImage)) {
+      const selectedCartItem = cartItems.find(item => item.id === selectedCartItemId);
+      const newItem: AiHistoryItem = {
+        id: `${Date.now()}-${generatedImage}`,
+        generatedImage: generatedImage,
+        title: selectedCartItem ? selectedCartItem.name : '선택 상품 없음',
+        timestamp: Date.now(),
+      };
+      setAiHistory(prev => [newItem, ...prev]);
+    }
+  }, [generatedImage, cartItems, selectedCartItemId]);
 
   const { 
     searchQuery: aiSearchQuery, 
@@ -358,6 +382,20 @@ const App: React.FC = () => {
           onGoToWishlist={() => setCurrentView('WISHLIST')}
           onGoToRecentlyViewed={() => setCurrentView('RECENTLY_VIEWED')}
           onGoToOrderHistory={() => setCurrentView('ORDER_HISTORY')}
+          onGoToAiHistory={() => setCurrentView('AI_HISTORY')}
+        />
+      )}
+
+      {currentView === 'AI_HISTORY' && (
+        <AiHistoryView
+          historyItems={aiHistory}
+          onBack={() => setCurrentView('MYPAGE')}
+          onDeleteImage={(idToDelete) => {
+            if (window.confirm('정말로 이 이미지를 삭제하시겠습니까?')) {
+              setAiHistory(prev => prev.filter(item => item.id !== idToDelete));
+              alert('이미지가 삭제되었습니다.');
+            }
+          }}
         />
       )}
 
@@ -449,7 +487,7 @@ const App: React.FC = () => {
         />
       )}
       
-      {(!['DETAIL', 'MY_PHOTOS', 'AI_STUDIO', 'CHECKOUT', 'ORDER_HISTORY'].includes(currentView)) && (
+      {(!['DETAIL', 'MY_PHOTOS', 'AI_STUDIO', 'CHECKOUT', 'ORDER_HISTORY', 'AI_HISTORY'].includes(currentView)) && (
         <Navbar 
           currentView={currentView} 
           setCurrentView={setCurrentView}
