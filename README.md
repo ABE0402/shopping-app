@@ -113,19 +113,19 @@ graph TD
             App["App.tsx<br/>(Main Controller & Router)"]:::client
             
             subgraph Views ["🖥️ UI Views (화면)"]
-                Home[HomeView<br/>(상품 목록)]:::view
-                Detail[DetailView<br/>(상품 상세)]:::view
-                Cart[CartView<br/>(장바구니)]:::view
-                MyPage[MyPageView<br/>(마이페이지)]:::view
-                AiStudio[AiStudioView<br/>(가상 피팅/생성)]:::view
-                AiCoord[AiCoordinatorView<br/>(AI 코디 추천)]:::view
-                Admin[AdminDashboard<br/>(상품 관리)]:::view
+                Home["HomeView<br/>(상품 목록)"]:::view
+                Detail["DetailView<br/>(상품 상세)"]:::view
+                Cart["CartView<br/>(장바구니)"]:::view
+                MyPage["MyPageView<br/>(마이페이지)"]:::view
+                AiStudio["AiStudioView<br/>(가상 피팅/생성)"]:::view
+                AiCoord["AiCoordinatorView<br/>(AI 코디 추천)"]:::view
+                Admin["AdminDashboard<br/>(상품 관리)"]:::view
             end
             
             subgraph Logic ["⚙️ Business Logic & Hooks"]
-                AuthState[useAuth<br/>(인증 상태)]:::service
-                DataState[useCart / useProducts<br/>(데이터 관리)]:::service
-                AiHooks[useAiStudio / useAiCoordinator<br/>(AI 로직)]:::service
+                AuthState["useAuth<br/>(인증 상태)"]:::service
+                DataState["useCart / useProducts<br/>(데이터 관리)"]:::service
+                AiHooks["useAiStudio / useAiCoordinator<br/>(AI 로직)"]:::service
             end
 
             subgraph Services ["🔌 Service Layer"]
