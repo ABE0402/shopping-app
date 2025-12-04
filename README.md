@@ -98,8 +98,8 @@ npm run preview
 ```mermaid
 graph TD
     %% 스타일 정의
-    classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
-    classDef view fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
+    classDef client fill:#ffffff,stroke:#0a1a2b,stroke-width:2px,color:#0a1a2b;
+    classDef view fill:#ffffff,stroke:#0a1a2b,stroke-width:2px,color:#0a1a2b;
     classDef service fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
     classDef firebase fill:#ffccbc,stroke:#bf360c,stroke-width:2px,color:#bf360c;
     classDef external fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
